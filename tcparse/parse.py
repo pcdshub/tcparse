@@ -13,11 +13,35 @@ TWINCAT_TYPES = {}
 
 
 def _register_type(cls):
+    'Decorator to register a TwincatItem-based class'
     TWINCAT_TYPES[cls.__name__] = cls
     return cls
 
 
 def separate_children_by_tag(children):
+    '''
+    Take in a list of `TwincatItem`s, categorize each by their XML tag, and
+    return a dictionary keyed on tag.
+
+    For example::
+
+        <a> <a> <b> <b>
+
+        Would become:
+        {'a': [<a>, <a>],
+         'b': [<b>, <b>]
+         }
+
+    Parameters
+    ----------
+    children : list
+        list of TwincatItem
+
+    Returns
+    -------
+    dict
+        Categorized children
+    '''
     d = collections.defaultdict(list)
     for child in children:
         d[child.tag].append(child)
@@ -33,6 +57,19 @@ def strip_namespace(tag):
 
 
 def element_to_class_name(element):
+    '''
+    Determine the Python class name for an element
+
+    Parameters
+    ----------
+    element : lxml.etree.Element
+
+    Returns
+    -------
+    class_name : str
+    base_class : class
+    '''
+
     tag = strip_namespace(element.tag)
     if tag == 'TcSmItem':
         return f'{tag}_' + element.attrib['ClassName'], TcSmItem
@@ -43,12 +80,19 @@ def element_to_class_name(element):
 
 
 class TwincatItem:
-    def __init__(self, element, *, attributes, parent=None, name=None,
-                 filename=None):
-        if attributes is None:
-            attributes = {}
+    def __init__(self, element, *, parent=None, name=None, filename=None):
+        '''
+        Represents a single TwinCAT project XML Element, for either tsproj,
+        xti, tmc, etc.
 
-        self.attributes = dict(attributes)
+        Parameters
+        ----------
+        element : lxml.etree.Element
+        parent : TwincatItem, optional
+        name : str, optional
+        filename : pathlib.Path, optional
+        '''
+        self.attributes = dict(element.attrib)
         self.children = []
         self.comments = []
         self.children_by_tag = None
@@ -63,18 +107,20 @@ class TwincatItem:
         self.post_init()
 
     def post_init(self):
-        'Hook for subclasses'
+        'Hook for subclasses; called after __init__'
         ...
 
     @property
     def root(self):
+        'The top-level TwincatItem'
         parent = self
         while parent.parent is not None:
             parent = parent.parent
         return parent
 
     @property
-    def qualified_name(self):
+    def qualified_path(self):
+        'Path of classes required to get to this instance'
         hier = [self]
         parent = self.parent
         while parent:
@@ -84,23 +130,45 @@ class TwincatItem:
                         for item in reversed(hier))
 
     def find_ancestor(self, cls):
+        '''
+        Find an ancestor of this instance
+
+        Parameters
+        ----------
+        cls : TwincatItem
+        '''
         parent = self.parent
         while parent and not isinstance(parent, cls):
             parent = parent.parent
         return parent
 
     def get_relative_path(self, path):
+        '''
+        Get an absolute path relative to this item
+
+        Returns
+        -------
+        path : pathlib.Path
+        '''
         root = pathlib.Path(self.filename).parent
         rel_path = pathlib.PureWindowsPath(path)
         return (root / rel_path).absolute()
 
     def find(self, cls):
+        '''
+        Find any descendents that are instances of cls
+
+        Parameters
+        ----------
+        cls : TwincatItem
+        '''
         for child in self.children:
             if isinstance(child, cls):
                 yield child
             yield from child.find(cls)
 
     def _add_children(self, element):
+        'A hook for adding all children'
         for child in element.iterchildren():
             self._add_child(child)
 
@@ -111,6 +179,7 @@ class TwincatItem:
                 setattr(self, key, value)
 
     def _add_child(self, element):
+        'Add a single child to the list of children'
         if isinstance(element, lxml.etree._Comment):
             self.comments.append(element.text)
             return
@@ -118,10 +187,13 @@ class TwincatItem:
         child = self.parse(element, parent=self, filename=self.filename)
         self.children.append(child)
 
+        # Two ways for names to come in:
+        # 1. the child has a tag of 'Name', with its text being our name
         if child.tag == 'Name' and child.text and self.parent:
             name = child.text.strip()
             self.name = name
 
+        # 2. the child has an attribute key 'Name'
         try:
             name = child.attributes.pop('Name').strip()
         except KeyError:
@@ -131,6 +203,22 @@ class TwincatItem:
 
     @staticmethod
     def parse(element, parent=None, filename=None):
+        '''
+        Parse an XML element and return a TwincatItem
+
+        Parameters
+        ----------
+        element : lxml.etree.Element
+        parent : TwincatItem, optional
+            The parent to assign to the new element
+        filename : str, optional
+            The filename the element originates from
+
+        Returns
+        -------
+        item : TwincatItem
+        '''
+
         classname, base = element_to_class_name(element)
 
         try:
@@ -139,10 +227,10 @@ class TwincatItem:
             # Dynamically create and register new TwincatItem-based types!
             cls = type(classname, (base, ), {})
             _register_type(cls)
-        return cls(element, attributes=element.attrib, parent=parent,
-                   filename=filename)
+        return cls(element, parent=parent, filename=filename)
 
     def _repr_info(self):
+        '__repr__ information'
         return {
             'name': self.name,
             'attributes': self.attributes,
@@ -160,8 +248,15 @@ class TwincatItem:
 
 @_register_type
 class Module(TwincatItem):
+    '''
+    [TMC] A Module
+
+    Contains generated symbols, data areas, and miscellaneous properties.
+    '''
+
     @property
     def ads_port(self):
+        'The ADS port assigned to the Virtual PLC'
         try:
             return self._ads_port
         except AttributeError:
@@ -175,22 +270,42 @@ class Module(TwincatItem):
 
 @_register_type
 class Property(TwincatItem):
+    '''
+    [TMC] A property containing a key/value pair
+
+    Examples of TMC properties::
+
+          ApplicationName (used for the ADS port)
+          ChangeDate
+          GeneratedCodeSize
+          GlobalDataSize
+    '''
     ...
 
 
 @_register_type
 class Link(TwincatItem):
+    '[XTI] Links between NC/PLC/IO'
     ...
 
 
 @_register_type
 class Symbol(TwincatItem):
+    '''
+    [TMC] A basic Symbol type
+
+    This is dynamically subclassed into new classes for ease of implementation
+    and searching.  For example, a function block defined as `FB_DriveVirtual`
+    will become `Symbol_FB_DriveVirtual`.
+    '''
     @property
     def nested_project(self):
+        'The nested project (i.e., virtual PLC project) associated with the symbol'
         return self.find_ancestor(TcSmItem_CNestedPlcProjDef)
 
     @property
     def module(self):
+        'The Module containing the Symbol'
         return self.find_ancestor(Module)
 
     @property
@@ -199,45 +314,79 @@ class Symbol(TwincatItem):
                     bit_size=self.BitSize[0].text,
                     base_type=self.BaseType[0].text,
                     bit_offs=self.BitOffs[0].text,
+                    module=self.module.name,
                     )
 
 
 @_register_type
 class Symbol_FB_DriveVirtual(Symbol):
+    '''
+    [TMC] A customized Symbol, representing only FB_DriveVirtual
+    '''
     def _repr_info(self):
+        '__repr__ information'
         repr_info = super()._repr_info()
+        # Add on the NC axis name
         repr_info.update(nc_axis=self.short_nc_axis_name)
         return repr_info
 
     @property
     def program_name(self):
+        '`Main` of `Main.M1`'
         return self.name.split('.')[0]
 
     @property
     def motor_name(self):
+        '`M1` of `Main.M1`'
         return self.name.split('.')[1]
 
     @property
     def pou(self):
+        'The POU program associated with the Symbol'
         return self.nested_project.pou_by_name[self.program_name]
 
     @property
     def call_block(self):
+        '''
+        A dictionary representation of the call
+
+        For example::
+            M1(a := 1, b := 2);
+
+        Becomes::
+            {'a': '1', 'b': '2'}
+        '''
         return self.pou.call_blocks[self.motor_name]
 
     @property
     def linked_to(self):
+        '''
+        Where the axis is linked to, determined by the call block in the POU
+        where the AXIS_REF is defined
+
+        Returns
+        -------
+        linked_to : str
+            e.g., M1Link
+        linked_to_full : str
+            e.g., Main.M1Link
+        '''
         linked_to = self.call_block['Axis']
         linked_to_full = f'{self.program_name}.{linked_to}'
         return linked_to, linked_to_full
 
     @property
     def nc_to_plc_link(self):
+        '''
+        The Link for NcToPlc
+
+        That is, how the NC axis is connected to the FB_DriveVirtual
+        '''
         _, linked_to_full = self.linked_to
 
         links = [
             link
-            for link in self.nested_project.find(TWINCAT_TYPES['Link'])
+            for link in self.nested_project.find(Link)
             if '^' + linked_to_full.lower() in link.attributes['VarA'].lower()
             and 'NcToPlc' in link.attributes['VarA']
         ]
@@ -247,10 +396,12 @@ class Symbol_FB_DriveVirtual(Symbol):
 
     @property
     def short_nc_axis_name(self):
+        'A/B/C/Axis 1.xti -> Axis 1.xti'
         return self.nc_axis.filename.parts[-1]
 
     @property
     def nc_axis(self):
+        'The NC `Axis` associated with the FB_DriveVirtual'
         link = self.nc_to_plc_link
         parent_name = link.parent.name.split('^')
         if parent_name[0] == 'TINC':
@@ -267,36 +418,55 @@ class Symbol_FB_DriveVirtual(Symbol):
 
 @_register_type
 class POU(TwincatItem):
+    '''
+    [XTI] A Program Organization Unit
+    '''
+
+    # TODO: may fail when mixed with ladder logic?
+
     @property
     def declaration(self):
+        'The declaration code; i.e., the top portion in visual studio'
         return self.Declaration[0].text
 
     @property
     def implementation(self):
+        'The implementation code; i.e., the bottom portion in visual studio'
         impl = self.Implementation[0]
         if hasattr(impl, 'ST'):
             return impl.ST[0].text
 
     @property
     def call_blocks(self):
+        'A dictionary of all implementation call blocks'
         return get_pou_call_blocks(self.declaration, self.implementation)
 
     @property
     def program_name(self):
+        'The program name, determined from the declaration'
         return program_name_from_declaration(self.declaration)
 
     @property
     def variables(self):
+        'A dictionary of variables defined in the POU'
         return variables_from_declaration(self.declaration)
 
 
 @_register_type
 class AxisPara(TwincatItem):
+    '''
+    [XTI] Axis Parameters
+
+    Has information on units, acceleration, deadband, etc.
+    '''
     ...
 
 
 @_register_type
 class NC(TwincatItem):
+    '''
+    [XTI] Top-level NC (or a link to it)
+    '''
     def post_init(self):
         if 'File' in self.attributes:
             # just a link to NC, not containing axes
