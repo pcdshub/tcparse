@@ -795,7 +795,6 @@ def get_pou_call_blocks(declaration, implementation):
         # Find: ^VAR(.*);
         reg = re.compile(r'^\s*' + var + r'\s*\(\s*((?:.*?\n?)+)\)\s*;',
                          re.MULTILINE)
-        print(reg)
         for match in reg.findall(implementation):
             call_body = ' '.join(line.strip() for line in match.splitlines())
             blocks[var].update(**dict(arg_value_re.findall(call_body)))
