@@ -230,13 +230,12 @@ class TwincatItem:
             cls = type(classname, (base, ), {})
             _register_type(cls)
 
-        try:
-            filename = element.attrib['File']
-        except KeyError:
+        if 'File' in element.attrib:
             # This is defined directly in the file. Instantiate it as-is:
-            return cls(element, parent=parent, filename=filename)
-        else:
+            filename = element.attrib['File']
             return cls.from_file(filename, parent=parent)
+
+        return cls(element, parent=parent, filename=filename)
 
     def _repr_info(self):
         '__repr__ information'
