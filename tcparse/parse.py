@@ -817,6 +817,7 @@ def load_project(fn):
 
     project = parse(fn)
     project = project.Project[0]
+    project.parent = None
     return project
 
 

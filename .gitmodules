@@ -1,0 +1,3 @@
+[submodule "tcparse/tests/projects/vonhamos-motion"]
+	path = tcparse/tests/projects/vonhamos-motion
+	url = git@github.com:pcdshub/vonhamos-motion
