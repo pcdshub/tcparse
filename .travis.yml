@@ -66,6 +66,7 @@ install:
 script:
   - flake8 tcparse
   - coverage run run_tests.py
+  - find tcparse/tests/projects
   - set -e
   
   - |
