@@ -10,6 +10,7 @@ import lxml.etree
 
 
 TWINCAT_TYPES = {}
+USE_FILE_AS_PATH = object()
 
 
 def _register_type(cls):
@@ -80,6 +81,8 @@ def element_to_class_name(element):
 
 
 class TwincatItem:
+    _load_path = ''
+
     def __init__(self, element, *, parent=None, name=None, filename=None):
         '''
         Represents a single TwinCAT project XML Element, for either tsproj,
@@ -227,7 +230,14 @@ class TwincatItem:
             # Dynamically create and register new TwincatItem-based types!
             cls = type(classname, (base, ), {})
             _register_type(cls)
-        return cls(element, parent=parent, filename=filename)
+
+        try:
+            filename = element.attrib['File']
+        except KeyError:
+            # This is defined directly in the file. Instantiate it as-is:
+            return cls(element, parent=parent, filename=filename)
+        else:
+            return cls.from_file(filename, parent=parent)
 
     def _repr_info(self):
         '__repr__ information'
@@ -244,6 +254,17 @@ class TwincatItem:
                         if value)
 
         return f'<{self.__class__.__name__} {info}>'
+
+    @classmethod
+    def from_file(cls, filename, parent):
+        if cls._load_path is USE_FILE_AS_PATH:
+            parent_root = pathlib.Path(parent.filename).parent
+            full_path = parent_root / pathlib.Path(parent.filename).stem / filename
+        else:
+            project = parent.find_ancestor(Project)
+            project_root = pathlib.Path(project.filename).parent
+            full_path = project_root / cls._load_path / filename
+        return parse(full_path, parent=parent)
 
 
 @_register_type
@@ -410,8 +431,8 @@ class Symbol_FB_DriveVirtual(Symbol):
         task_name, axis_section, axis_name = parent_name
 
         nc, = list(nc for nc in self.root.find(NC)
-                   if nc.Axis and nc.SafTask[0].name == task_name)
-        nc_axis = nc.axis_by_name[axis_name].Axis[0]
+                   if nc.SafTask[0].name == task_name)
+        nc_axis = nc.axis_by_name[axis_name]
         # link nc_axis and FB_DriveVirtual?
         return nc_axis
 
@@ -465,44 +486,29 @@ class AxisPara(TwincatItem):
 @_register_type
 class NC(TwincatItem):
     '''
-    [XTI] Top-level NC (or a link to it)
+    [XTI] Top-level NC
     '''
-    def post_init(self):
-        if 'File' in self.attributes:
-            # just a link to NC, not containing axes
-            self.Axis = []
-            return
+    _load_path = '_Config/NC'
 
+    def post_init(self):
+        self.axes = [item.Axis[0] for item in self.TcSmItem]
         self.axis_by_id = {
-            int(axis.attributes['Id']): axis.axis
-            for axis in self.Axis
+            int(axis.attributes['Id']): axis
+            for axis in self.axes
         }
 
         self.axis_by_name = {
-            os.path.splitext(axis.attributes['File'])[0]: axis.axis
-            for axis in self.Axis
+            pathlib.Path(axis.filename).stem: axis
+            for axis in self.axes
         }
 
 
 @_register_type
 class Axis(TwincatItem):
-    def post_init(self):
-        try:
-            axis_filename = self.attributes['File']
-        except KeyError:
-            # Axis inside of an 'Axis 1.xti' file
-            self.axis_filename = None
-            self.axis = None
-            return
-
-        self.axes_path = self.get_relative_path('Axes')
-        self.axis_filename = self.axes_path / axis_filename
-        self.axis = parse(self.axis_filename, parent=self)
+    _load_path = '_Config/NC/Axes'
 
     def find(self, cls):
         yield from super().find(cls)
-        if self.axis is not None:
-            yield from self.axis.find(cls)
 
     def summarize(self):
         yield from self.attributes.items()
@@ -535,21 +541,7 @@ class Encoder(TwincatItem):
 
 @_register_type
 class Project(TwincatItem):
-    def post_init(self):
-        self.project_root = pathlib.Path(self.filename).parent
-        self.files = collections.defaultdict(dict)
-        for attr, file in self.filenames:
-            self.files[attr][str(file)] = parse(self.project_root / file,
-                                                parent=self)
-
-        self.plc_projects = {}
-        # self._load_plc_projects(self.files['Plc'])
-
-    def find(self, cls):
-        yield from super().find(cls)
-        for attr, files in self.files.items():
-            for fn, file in files.items():
-                yield from file.find(cls)
+    _load_path = '_Config/PLC'
 
     @property
     def ams_id(self):
@@ -562,24 +554,20 @@ class Project(TwincatItem):
             return ams_id[:-4]
         return ams_id  # :(
 
-    @property
-    def filenames(self):
-        for attr, root in [
-                ('Motion', '_Config/NC'),
-                ('Plc', '_Config/PLC'),
-                ('Io', '_Config/IO')
-                ]:
-            if not hasattr(self, attr):
-                continue
-
-            for section in getattr(self, attr):
-                for item in section.children:
-                    yield attr, pathlib.Path(root) / item.attributes['File']
-
 
 @_register_type
 class TcSmItem(TwincatItem):
     ...
+
+
+@_register_type
+class Device(TwincatItem):
+    _load_path = '_Config/IO'
+
+
+@_register_type
+class Box(TwincatItem):
+    _load_path = USE_FILE_AS_PATH
 
 
 @_register_type
@@ -607,7 +595,7 @@ class TcSmItem_CNestedPlcProjDef(TcSmItem):
             if 'Include' in compile.attributes
         ]
         self.source = {
-            str(fn.relative_to(self.project.project_root)):
+            str(fn.relative_to(self.project.filename.parent)):
             parse(fn, parent=self)
             for fn in self.source_filenames
         }
