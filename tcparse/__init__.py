@@ -6,4 +6,5 @@ del get_versions
 
 globals().update(TWINCAT_TYPES)
 
-__all__ = ['__version__', 'load_project'] + list(TWINCAT_TYPES)
+__all__ = ['__version__', 'load_project']
+__all__ += list(TWINCAT_TYPES)

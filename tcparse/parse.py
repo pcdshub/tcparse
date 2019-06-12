@@ -257,7 +257,8 @@ class TwincatItem:
     def from_file(cls, filename, parent):
         if cls._load_path is USE_FILE_AS_PATH:
             parent_root = pathlib.Path(parent.filename).parent
-            full_path = parent_root / pathlib.Path(parent.filename).stem / filename
+            full_path = (parent_root / pathlib.Path(parent.filename).stem /
+                         filename)
         else:
             project = parent.find_ancestor(Project)
             project_root = pathlib.Path(project.filename).parent
@@ -319,7 +320,7 @@ class Symbol(TwincatItem):
     '''
     @property
     def nested_project(self):
-        'The nested project (i.e., virtual PLC project) associated with the symbol'
+        'The nested project (virtual PLC project) associated with the symbol'
         return self.find_ancestor(TcSmItem_CNestedPlcProjDef)
 
     @property
@@ -839,7 +840,8 @@ if __name__ == '__main__':
     try:
         fn = sys.argv[1]
     except IndexError:
-        fn = '/Users/klauer/Repos/vonhamos-motion/twincat/VonHamos01/VonHamos01/VonHamos01.tsproj'
+        fn = ('/Users/klauer/Repos/vonhamos-motion/twincat/VonHamos01/'
+              'VonHamos01/VonHamos01.tsproj')
 
     project = load_project(fn)
     motors = list(project.find(Symbol_FB_DriveVirtual))
