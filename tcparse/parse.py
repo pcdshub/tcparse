@@ -505,6 +505,9 @@ class NC(TwincatItem):
 
 @_register_type
 class Axis(TwincatItem):
+    '''
+    [XTI] A single NC axis
+    '''
     _load_path = '_Config/NC/Axes'
 
     def find(self, cls):
@@ -525,11 +528,22 @@ class Axis(TwincatItem):
 
 @_register_type
 class EncPara(TwincatItem):
+    '''
+    [XTI] Encoder parameters
+
+    Includes such parameters as ScaleFactorNumerator, ScaleFactorDenominator,
+    and so on.
+    '''
     ...
 
 
 @_register_type
 class Encoder(TwincatItem):
+    '''
+    [XTI] Encoder
+
+    Contains EncPara, Vars, Mappings, etc.
+    '''
     def summarize(self):
         yield 'EncType', self.attributes['EncType']
         for param in self.find(EncPara):
@@ -541,14 +555,23 @@ class Encoder(TwincatItem):
 
 @_register_type
 class Project(TwincatItem):
+    '''
+    [tsproj] A top-level project
+    '''
     _load_path = '_Config/PLC'
 
     @property
     def ams_id(self):
+        '''
+        The AMS ID of the configured target
+        '''
         return self.attributes['TargetNetId']
 
     @property
     def target_ip(self):
+        '''
+        A guess of the target IP, based on the AMS ID
+        '''
         ams_id = self.ams_id
         if ams_id.endswith('.1.1'):
             return ams_id[:-4]
@@ -557,27 +580,39 @@ class Project(TwincatItem):
 
 @_register_type
 class TcSmItem(TwincatItem):
+    '''
+    [XTI] Top-level container for XTI files
+
+    Further broken down into classes such as `TcSmItem_CNcSafTaskDef`, the
+    latter portion being derived from the `ClassName` attribute in the XML
+    file.
+    '''
     ...
 
 
 @_register_type
 class Device(TwincatItem):
+    '''
+    [XTI] Top-level IO device container
+    '''
     _load_path = '_Config/IO'
 
 
 @_register_type
 class Box(TwincatItem):
+    '''
+    [XTI] A box / module
+    '''
     _load_path = USE_FILE_AS_PATH
 
 
 @_register_type
-class TcSmItem_CNcSafTaskDef(TcSmItem):
-    def post_init(self):
-        self.axes = list(self.find(Axis))
-
-
-@_register_type
 class TcSmItem_CNestedPlcProjDef(TcSmItem):
+    '''
+    [XTI] Nested PLC project definition (i.e., a virtual PLC project)
+
+    Contains POUs and a parsed version of the tmc
+    '''
     def post_init(self):
         proj = self.Project[0]
         project_path = self.get_relative_path(proj.attributes['PrjFilePath'])
@@ -618,10 +653,23 @@ class TcSmItem_CNestedPlcProjDef(TcSmItem):
 
 @_register_type
 class Compile(TwincatItem):
+    '''
+    [XTI] An entry in a nested/virtual PLC project
+
+    File to load is marked with 'Include'
+    May be TcTTO, TcPOU, TcDUT, etc.
+    '''
     ...
 
 
 def program_name_from_declaration(declaration):
+    '''
+    Determine a program name from a given declaration
+
+    Looks for::
+
+        PROGRAM <program_name>
+    '''
     for line in declaration.splitlines():
         line = line.strip()
         if line.lower().startswith('program '):
@@ -629,19 +677,47 @@ def program_name_from_declaration(declaration):
 
 
 def lines_between(text, start_marker, end_marker, *, include_blank=False):
+    '''
+    From a block of text, yield all lines between `start_marker` and
+    `end_marker`
+
+    Parameters
+    ----------
+    text : str
+        The block of text
+    start_marker : str
+        The block-starting marker to match
+    end_marker : str
+        The block-ending marker to match
+    include_blank : bool, optional
+        Skip yielding blank lines
+    '''
     found_start = False
     start_marker = start_marker.lower()
     end_marker = end_marker.lower()
     for line in text.splitlines():
-        if line.lower() == start_marker:
+        if line.strip().lower() == start_marker:
             found_start = True
-        elif line.lower() == end_marker:
+        elif line.strip().lower() == end_marker:
             break
         elif found_start and (line.strip() or include_blank):
             yield line
 
 
 def variables_from_declaration(declaration):
+    '''
+    Find all variable declarations given a declaration text block
+
+    Parameters
+    ----------
+    declaration : str
+        The declaration code
+
+    Returns
+    -------
+    {'var': {'type': 'TYPE', 'spec': '%I'}, ...}
+    '''
+    # TODO: this has not been tested well at all
     variables = {}
     in_struct = False
     for line in lines_between(declaration, 'var', 'end_var'):
@@ -671,6 +747,44 @@ def variables_from_declaration(declaration):
 
 
 def get_pou_call_blocks(declaration, implementation):
+    '''
+    Find all call blocks given a specific POU declaration and implementation.
+    Note that this function is not "smart". Further calls will be squashed into
+    one.  Control flow is not respected.
+
+    Given the following declaration::
+
+        PROGRAM Main
+        VAR
+                M1: FB_DriveVirtual;
+                M1Link: FB_NcAxis;
+                bLimitFwdM1 AT %I*: BOOL;
+                bLimitBwdM1 AT %I*: BOOL;
+
+        END_VAR
+
+    and implementation::
+
+        M1Link(En := TRUE);
+        M1(En := TRUE,
+           bEnable := TRUE,
+           bLimitFwd := bLimitFwdM1,
+           bLimitBwd := bLimitBwdM1,
+           Axis := M1Link.axis);
+
+        M1(En := FALSE);
+
+    This function would return the following dictionary::
+
+        {'M1': {'En': 'FALSE',
+          'bEnable': 'TRUE',
+          'bLimitFwd': 'bLimitFwdM1',
+          'bLimitBwd': 'bLimitBwdM1',
+          'Axis': 'M1Link.axis'},
+         'M1Link': {'En': 'TRUE'}
+         }
+
+    '''
     variables = variables_from_declaration(declaration)
     blocks = collections.defaultdict(dict)
 
@@ -679,8 +793,10 @@ def get_pou_call_blocks(declaration, implementation):
     arg_value_re = re.compile(r'([a-zA-Z0-9_]+)\s*:=\s*([a-zA-Z0-9_\.]+)')
 
     for var in variables:
-        # Find: VAR(.*);
-        reg = re.compile(var + r'\s*\(\s*((?:.*?\n?)+)\)\s*;', re.MULTILINE)
+        # Find: ^VAR(.*);
+        reg = re.compile(r'^\s*' + var + r'\s*\(\s*((?:.*?\n?)+)\)\s*;',
+                         re.MULTILINE)
+        print(reg)
         for match in reg.findall(implementation):
             call_body = ' '.join(line.strip() for line in match.splitlines())
             blocks[var].update(**dict(arg_value_re.findall(call_body)))
@@ -689,12 +805,31 @@ def get_pou_call_blocks(declaration, implementation):
 
 
 def load_project(fn):
+    '''
+    Load a tsproj file
+
+    Returns
+    -------
+    project : Project
+        The top-level Visual Studio project
+    '''
+    fn = pathlib.Path(fn)
+    if fn.suffix.lower() != '.tsproj':
+        raise ValueError('Expected a .tsproj file')
+
     project = parse(fn)
     project = project.Project[0]
     return project
 
 
 def parse(fn, *, parent=None):
+    '''
+    Parse a given tsproj, xti, or tmc file.
+
+    Returns
+    -------
+    item : TwincatItem
+    '''
     with open(fn, 'rt') as f:
         tree = lxml.etree.parse(f)
 
