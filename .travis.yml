@@ -1,0 +1,95 @@
+language: python
+dist: xenial
+
+sudo: false
+
+
+env: 
+   global:
+      - OFFICIAL_REPO="pcdshub/tcparse"
+      - secure: ""
+
+cache:
+  directories:
+    - $HOME/.cache/pip
+    - $HOME/.ccache  # https://github.com/travis-ci/travis-ci/issues/5853
+
+matrix:
+  include:
+    - python: 3.6
+      env:
+        - BUILD_DOCS=1
+        - PCDS_CHANNEL=pcds-tag
+    - python: 3.6
+      env: PCDS_CHANNEL=pcds-dev
+    - python: 3.7
+      env: PCDS_CHANNEL=pcds-tag
+    - python: 3.7
+      env: PCDS_CHANNEL=pcds-dev
+  allow_failures:
+    - python: 3.7
+      env: PCDS_CHANNEL=pcds-tag
+    - python: 3.7
+      env: PCDS_CHANNEL=pcds-dev
+
+install:
+  # Install and configure miniconda
+  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+
+  # Ensure all packages are up-to-date
+  - conda update -q conda
+  - conda install conda-build anaconda-client
+  - conda config --append channels $PCDS_CHANNEL
+  - conda config --append channels conda-forge
+  - conda info -a
+
+  # Build the conda recipe for this package
+  - conda build -q conda-recipe --python=$TRAVIS_PYTHON_VERSION --output-folder bld-dir
+  - conda config --add channels "file://`pwd`/bld-dir"
+
+  # Create the test environment
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION tcparse --file requirements.txt
+  - source deactivate
+  - source activate test-environment
+
+  # Install additional development requirements
+  - pip install -Ur dev-requirements.txt
+  # Install the package
+  - pip install -e .
+
+
+
+script:
+  - flake8 tcparse
+  - coverage run run_tests.py
+  - set -e
+  
+  - |
+    if [[ -n "$DOCTR_DEPLOY_ENCRYPTION_KEY_PCDSHUB_TCPARSE" && $BUILD_DOCS ]]; then
+      # Create HTML documentation  
+      pushd docs
+      make html
+      popd
+      #Publish docs.
+      doctr deploy . --built-docs docs/build/html --deploy-branch-name gh-pages --command "touch .nojekyll; git add .nojekyll"
+    fi
+   
+
+after_success:
+  - coverage report -m
+  - codecov
+
+  - |
+    if [[ $TRAVIS_PULL_REQUEST == false && $TRAVIS_REPO_SLUG == $OFFICIAL_REPO ]]; then
+      if [[ $TRAVIS_BRANCH == $TRAVIS_TAG  && $TRAVIS_TAG != '' && $PCDS_CHANNEL == 'pcds-tag' ]]; then
+        export ANACONDA_API_TOKEN=$CONDA_UPLOAD_TOKEN_TAG
+        anaconda upload bld-dir/linux-64/*.tar.bz2
+      elif [[ $TRAVIS_BRANCH == 'master' && $TRAVIS_TAG == '' && $PCDS_CHANNEL == 'pcds-dev' ]]; then
+        export ANACONDA_API_TOKEN=$CONDA_UPLOAD_TOKEN_DEV
+        anaconda upload bld-dir/linux-64/*.tar.bz2
+      fi
+    fi

@@ -1,0 +1,32 @@
+
+{% set data = load_setup_py_data() %}
+
+
+package:
+    name    : tcparse
+
+    version : {{ data.get('version') }}
+
+
+source:
+    path: ..
+
+requirements:
+    build:
+      - python
+      - setuptools
+
+    run:
+      - python
+
+test:
+    imports:
+      - tcparse
+
+    requires:
+      - pytest
+
+about:
+  home: https://github.com/pcdshub/tcparse
+  license: SLAC Open License
+  summary: TwinCAT XAE Project (tsproj / plcproj / XTI / TMC) Parser
