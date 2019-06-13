@@ -23,6 +23,7 @@ Requirements
 
 * Python 3.6+
 * lxml
+* Jinja2
 
 Installation
 ------------
