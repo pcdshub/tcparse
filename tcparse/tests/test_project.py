@@ -40,5 +40,7 @@ def test_fb_drivevirtual_linking(project):
         print('Call block', inst.call_block)
         print('Linked to', inst.linked_to)
         print('NC to PLC link', inst.nc_to_plc_link)
-        print('Short NC axis name', inst.short_nc_axis_name)
-        print('NC axis', inst.nc_axis)
+
+        nc_axis = inst.nc_axis
+        print('Short NC axis name', nc_axis.short_name)
+        print('NC axis', nc_axis)

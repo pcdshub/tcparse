@@ -1,4 +1,5 @@
 import collections
+import logging
 import os
 import pathlib
 import re
@@ -11,6 +12,8 @@ import lxml.etree
 
 TWINCAT_TYPES = {}
 USE_FILE_AS_PATH = object()
+
+logger = logging.getLogger(__name__)
 
 
 def _register_type(cls):
@@ -348,7 +351,7 @@ class Symbol_FB_DriveVirtual(Symbol):
         '__repr__ information'
         repr_info = super()._repr_info()
         # Add on the NC axis name
-        repr_info.update(nc_axis=self.short_nc_axis_name)
+        repr_info.update(nc_axis=self.nc_axis.short_name)
         return repr_info
 
     @property
@@ -414,11 +417,6 @@ class Symbol_FB_DriveVirtual(Symbol):
 
         link, = links
         return link
-
-    @property
-    def short_nc_axis_name(self):
-        'A/B/C/Axis 1.xti -> Axis 1.xti'
-        return self.nc_axis.filename.parts[-1]
 
     @property
     def nc_axis(self):
@@ -510,8 +508,28 @@ class Axis(TwincatItem):
     '''
     _load_path = '_Config/NC/Axes'
 
-    def find(self, cls):
-        yield from super().find(cls)
+    @property
+    def axis_number(self):
+        return self.attributes['Id']
+
+    @property
+    def short_name(self):
+        'A/B/C/Axis 1.xti -> Axis 1.xti'
+        return self.filename.stem
+
+    @property
+    def units(self):
+        try:
+            for axis_para in getattr(self, 'AxisPara', []):
+                for general in getattr(axis_para, 'General', []):
+                    if 'UnitName' in general.attributes:
+                        return general.attributes['UnitName']
+        except Exception:
+            logger.exception('Unable to determine EGU for Axis %s', self)
+
+        # 'mm' is the default in twincat if unspecified. defaults are not saved
+        # in the xti files:
+        return 'mm'
 
     def summarize(self):
         yield from self.attributes.items()

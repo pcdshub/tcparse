@@ -6,7 +6,11 @@ Relies on the existence (and linking) of FB_DriveVirtual function blocks.
 """
 
 import argparse
+import getpass
 import logging
+import pathlib
+
+import jinja2
 
 from .parse import load_project, Symbol_FB_DriveVirtual
 
@@ -26,6 +30,26 @@ def build_arg_parser():
     )
 
     parser.add_argument(
+        '-p', '--prefix', type=str, default=None,
+        help='PV prefix for the IOC'
+    )
+
+    parser.add_argument(
+        '--binary', type=str, default='adsMotion',
+        help='IOC application binary name'
+    )
+
+    parser.add_argument(
+        '-n', '--name', type=str, default=None,
+        help='IOC name (defaults to project name)'
+    )
+
+    parser.add_argument(
+        '--template', type=str, default='stcmd_default.cmd',
+        help='st.cmd Jinja2 template',
+    )
+
+    parser.add_argument(
         '--log',
         '-l',
         default='WARNING',  # WARN level messages
@@ -42,12 +66,56 @@ def main():
 
     logger = logging.getLogger('tcparse')
     logger.setLevel(args.log)
+    logging.basicConfig()
+
+    jinja_env = jinja2.Environment(
+        loader=jinja2.PackageLoader("tcparse", "templates"),
+        trim_blocks=True,
+        lstrip_blocks=True,
+    )
+
+    if not args.name:
+        args.name = pathlib.Path(args.tsproj_project).stem
+
+    if not args.prefix:
+        args.prefix = args.name.upper()
+
+    template = jinja_env.get_template(args.template)
 
     project = load_project(args.tsproj_project)
-    motors = list(project.find(Symbol_FB_DriveVirtual))
-    for motor in motors:
-        print(motor)
+    motors = [(motor, motor.nc_axis)
+              for motor in project.find(Symbol_FB_DriveVirtual)]
 
+    template_motors = [
+        dict(axisconfig='',
+             name=nc_axis.short_name.replace(' ', '_'),
+             axis_no=nc_axis.axis_number,
+             desc=f'{motor.name} / {nc_axis.short_name}',
+             egu=nc_axis.units,
+             prec=3,
+             )
+        for motor, nc_axis in motors
+    ]
 
-if __name__ == '__main__':
-    main()
+    if motors:
+        # TODO: for now, only support a single virtual PLC for all motors
+        ads_port = motors[0][0].module.ads_port
+    else:
+        ads_port = 851
+
+    template_args = dict(
+        binary_name=args.binary,
+        name=args.name,
+        prefix=args.prefix,
+        user=getpass.getuser(),
+
+        motor_port='PLC_ADS',
+        asyn_port='ASYN_PLC',
+        plc_ams_id=project.ams_id,
+        plc_ip=project.target_ip,
+        plc_ads_port=ads_port,
+
+        motors=template_motors,
+    )
+
+    print(template.render(**template_args))
