@@ -21,22 +21,48 @@ epicsEnvSet("MOTOR_PORT",    "{{motor_port}}")
 epicsEnvSet("ASYN_PORT",     "{{asyn_port}}")
 epicsEnvSet("PREFIX",        "{{prefix}}{{delim}}")
 epicsEnvSet("ECM_NUMAXES",   "{{motors|length}}")
+epicsEnvSet("NUMAXES",       "{{motors|length}}")
 
 epicsEnvSet("IPADDR",        "{{plc_ip}}")
 epicsEnvSet("AMSID",         "{{plc_ams_id}}")
 epicsEnvSet("IPPORT",        "{{plc_ads_port}}")
-< "$(ETHERCATMC)/startup/EthercatMCController.cmd"
+
+adsAsynPortDriverConfigure("$(ASYN_PORT)","$(IPADDR)","$(AMSID)","$(IPPORT)", 1000, 0, 0, 50, 100, 1000, 0)
+EthercatMCCreateController("$(MOTOR_PORT)", "$(ASYN_PORT)", "$(NUMAXES)", "200", "1000")
+
+#define ASYN_TRACE_ERROR     0x0001
+#define ASYN_TRACEIO_DEVICE  0x0002
+#define ASYN_TRACEIO_FILTER  0x0004
+#define ASYN_TRACEIO_DRIVER  0x0008
+#define ASYN_TRACE_FLOW      0x0010
+#define ASYN_TRACE_WARNING   0x0020
+#define ASYN_TRACE_INFO      0x0040
+asynSetTraceMask("$(ASYN_PORT)", -1, 0x41)
+
+#define ASYN_TRACEIO_NODATA 0x0000
+#define ASYN_TRACEIO_ASCII  0x0001
+#define ASYN_TRACEIO_ESCAPE 0x0002
+#define ASYN_TRACEIO_HEX    0x0004
+asynSetTraceIOMask("$(ASYN_PORT)", -1, 2)
+
+#define ASYN_TRACEINFO_TIME 0x0001
+#define ASYN_TRACEINFO_PORT 0x0002
+#define ASYN_TRACEINFO_SOURCE 0x0004
+#define ASYN_TRACEINFO_THREAD 0x0008
+asynSetTraceInfoMask("$(ASYN_PORT)", -1, 5)
 
 {% for motor in motors %}
-
 epicsEnvSet("AXISCONFIG",    "{{motor.axisconfig}}")
 epicsEnvSet("MOTOR_NAME",    "{{motor.name}}")
 epicsEnvSet("AXIS_NO",       "{{motor.axis_no}}")
 epicsEnvSet("DESC",          "{{motor.desc}}")
 epicsEnvSet("EGU",           "{{motor.egu}}")
 epicsEnvSet("PREC",          "{{motor.prec}}")
-< "$(ETHERCATMC)/startup/EthercatMCAxis.cmd"
-< "$(ETHERCATMC)/startup/EthercatMCAxisdebug.cmd"
+
+EthercatMCCreateAxis("$(MOTOR_PORT)", "$(AXIS_NO)", "6", "$(AXISCONFIG)")
+dbLoadRecords("EthercatMC.template", "PREFIX=$(PREFIX), MOTOR_NAME=$(MOTOR_NAME), R=$(MOTOR_NAME)-, MOTOR_PORT=$(MOTOR_PORT), ASYN_PORT=$(ASYN_PORT), AXIS_NO=$(AXIS_NO), DESC=$(DESC), PREC=$(PREC) $(ECAXISFIELDINIT)")
+dbLoadRecords("EthercatMCreadback.template", "PREFIX=$(PREFIX), MOTOR_NAME=$(MOTOR_NAME), R=$(MOTOR_NAME)-, MOTOR_PORT=$(MOTOR_PORT), ASYN_PORT=$(ASYN_PORT), AXIS_NO=$(AXIS_NO), DESC=$(DESC), PREC=$(PREC) ")
+dbLoadRecords("EthercatMCdebug.template", "PREFIX=$(PREFIX), MOTOR_NAME=$(MOTOR_NAME), MOTOR_PORT=$(MOTOR_PORT), AXIS_NO=$(AXIS_NO), PREC=3")
 
 {% endfor %}
 cd "$(TOP)"
