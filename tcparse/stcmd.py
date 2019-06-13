@@ -9,6 +9,7 @@ import argparse
 import getpass
 import logging
 import pathlib
+import sys
 
 import jinja2
 
@@ -60,10 +61,12 @@ def build_arg_parser():
     return parser
 
 
-def main():
+def main(*, cmdline_args=None):
     parser = build_arg_parser()
-    args = parser.parse_args()
+    return run(parser.parse_args(cmdline_args))
 
+
+def run(args):
     logger = logging.getLogger('tcparse')
     logger.setLevel(args.log)
     logging.basicConfig()
@@ -118,4 +121,4 @@ def main():
         motors=template_motors,
     )
 
-    print(template.render(**template_args))
+    return template.render(**template_args)
