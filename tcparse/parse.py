@@ -1,4 +1,5 @@
 import collections
+import os
 import pathlib
 import re
 import sys
@@ -821,6 +822,49 @@ def load_project(fn):
     return project
 
 
+def case_insensitive_path(path):
+    '''
+    Match a path in a case-insensitive manner, returning the actual filename as
+    it exists on the host machine
+
+    Required on Linux to find files in a case-insensitive way. Not required on
+    OSX/Windows, but platform checks are not done here.
+
+    Parameters
+    ----------
+    path : pathlib.Path or str
+        The case-insensitive path
+
+    Returns
+    -------
+    path : pathlib.Path or str
+        The case-corrected path
+
+    Raises
+    ------
+    FileNotFoundError
+        When the file can't be found
+    '''
+    path = pathlib.Path(path)
+    if path.exists():
+        return path
+
+    new_path = pathlib.Path(path.parts[0])
+    for part in path.parts[1:]:
+        if not (new_path / part).exists():
+            all_files = {fn.lower(): fn
+                         for fn in os.listdir(new_path)}
+            try:
+                part = all_files[part.lower()]
+            except KeyError:
+                raise FileNotFoundError(
+                    f'{path} does not exist ({part!r} not in {new_path!r})'
+                ) from None
+        new_path = new_path / part
+
+    return new_path
+
+
 def parse(fn, *, parent=None):
     '''
     Parse a given tsproj, xti, or tmc file.
@@ -829,6 +873,8 @@ def parse(fn, *, parent=None):
     -------
     item : TwincatItem
     '''
+    fn = case_insensitive_path(fn)
+
     with open(fn, 'rt') as f:
         tree = lxml.etree.parse(f)
 
