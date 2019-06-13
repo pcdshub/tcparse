@@ -880,14 +880,3 @@ def parse(fn, *, parent=None):
 
     root = tree.getroot()
     return TwincatItem.parse(root, filename=fn, parent=parent)
-
-
-if __name__ == '__main__':
-    try:
-        fn = sys.argv[1]
-    except IndexError:
-        fn = ('/Users/klauer/Repos/vonhamos-motion/twincat/VonHamos01/'
-              'VonHamos01/VonHamos01.tsproj')
-
-    project = load_project(fn)
-    motors = list(project.find(Symbol_FB_DriveVirtual))
