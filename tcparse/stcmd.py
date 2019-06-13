@@ -9,7 +9,6 @@ import argparse
 import getpass
 import logging
 import pathlib
-import sys
 
 import jinja2
 
