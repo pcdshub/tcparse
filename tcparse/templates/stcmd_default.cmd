@@ -19,7 +19,7 @@ cd "$(TOP)/db"
 
 epicsEnvSet("MOTOR_PORT",    "{{motor_port}}")
 epicsEnvSet("ASYN_PORT",     "{{asyn_port}}")
-epicsEnvSet("PREFIX",        "{{prefix}}")
+epicsEnvSet("PREFIX",        "{{prefix}}{{delim}}")
 epicsEnvSet("ECM_NUMAXES",   "{{motors|length}}")
 
 epicsEnvSet("IPADDR",        "{{plc_ip}}")
@@ -39,7 +39,6 @@ epicsEnvSet("PREC",          "{{motor.prec}}")
 < "$(ETHERCATMC)/startup/EthercatMCAxisdebug.cmd"
 
 {% endfor %}
-
 cd "$(TOP)"
 
 dbLoadRecords("db/iocAdmin.db", "P={{prefix}},IOC={{prefix}}" )

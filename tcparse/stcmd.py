@@ -46,6 +46,11 @@ def build_arg_parser():
     )
 
     parser.add_argument(
+        '--delim', type=str, default=':',
+        help='Preferred PV delimiter'
+    )
+
+    parser.add_argument(
         '--template', type=str, default='stcmd_default.cmd',
         help='st.cmd Jinja2 template',
     )
@@ -89,9 +94,14 @@ def run(args):
     motors = [(motor, motor.nc_axis)
               for motor in project.find(Symbol_FB_DriveVirtual)]
 
+    def get_name(nc_axis):
+        name = nc_axis.short_name
+        name = name.replace(' ', args.delim)
+        return name.replace('_', args.delim)
+
     template_motors = [
         dict(axisconfig='',
-             name=nc_axis.short_name.replace(' ', '_'),
+             name=get_name(nc_axis),
              axis_no=nc_axis.axis_number,
              desc=f'{motor.name} / {nc_axis.short_name}',
              egu=nc_axis.units,
@@ -110,6 +120,7 @@ def run(args):
         binary_name=args.binary,
         name=args.name,
         prefix=args.prefix,
+        delim=args.delim,
         user=getpass.getuser(),
 
         motor_port='PLC_ADS',
