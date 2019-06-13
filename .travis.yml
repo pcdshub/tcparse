@@ -7,7 +7,7 @@ sudo: false
 env: 
    global:
       - OFFICIAL_REPO="pcdshub/tcparse"
-      - secure: ""
+      - secure: "haqlA5ZTXMJfFlCrs5wYp3npKuDqOtuAi4DxZ2WvDvXFZZchroyvsWQrvZWYU0UlKifpsrbHxnxYNvvpRhZSZDDN4KuTa1J+P+NSzJW02q8tsxREflq2zhginlIZZd3HGo+1vPURz6ZFimIrFl6ckw4p2gsue39k/TCZORucQca4JpvSjWxmbCEvH3IF7R8rA8I1BHoM+BpXFdB87oIcg8YshUuI/H5+1dFKWpDN9nGd1bbjMf+m+orrl1qPwJHJUkbr1qtkP7N/PFQOLdy8PcHQH0W+739DzWFM98H6qaa1d/WZnlFWLcrLXgtfUjRDaj9igZVDO04nREChHlcxree/Wnr0RDHnbAaiDvd74Ifz/1VltUYSjjWPgURbDPVhpqfYzi4dn+Lv2KwP3h04AANuKRVz2KR2tuyvhcfhDAbGNf1N5yHN2sS9V2zKY90XelKrW/cpqJuZDZshMop2o/MvegcM/BexbaLx8gPf1XIToKDQwF2pK+cO1BPtLwHwg9Xc7HYCX7f4ATxH82l+kO7+ZIsAt4t2603Tiyw9rJDesggS28xwjJG6I5wGqiPWAs1eX/wd/P7gr0PTvqVwSrgiBGp9jZUYL0NxFe3NyuzFi9w63gfZXejbMvOv/mY2SZSyWn4RPocywuhkzW9id2Uix144XGL3uMG7OTFMYQU="
 
 cache:
   directories:
