@@ -679,6 +679,30 @@ class Compile(TwincatItem):
     ...
 
 
+@_register_type
+class RemoteConnections(TwincatItem):
+    '''
+    [StaticRoutes] Routes contained in the TwinCat configuration
+    '''
+    def post_init(self):
+        def to_dict(child):
+            return {
+                item.tag: item.text
+                for item in child.children
+            }
+
+        def keyed_on(key):
+            return {
+                getattr(child, key)[0].text: to_dict(child)
+                for child in self.children
+                if hasattr(child, key)
+            }
+
+        self.by_name = keyed_on('Name')
+        self.by_address = keyed_on('Address')
+        self.by_ams_id = keyed_on('NetId')
+
+
 def program_name_from_declaration(declaration):
     '''
     Determine a program name from a given declaration
