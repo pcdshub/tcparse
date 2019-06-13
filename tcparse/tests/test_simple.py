@@ -80,4 +80,3 @@ def test_route_parsing():
             'Type': 'TCP_IP'
         },
     }
-
