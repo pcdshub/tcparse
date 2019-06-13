@@ -395,7 +395,10 @@ class Symbol_FB_DriveVirtual(Symbol):
             e.g., Main.M1Link
         '''
         linked_to = self.call_block['Axis']
-        linked_to_full = f'{self.program_name}.{linked_to}'
+        if '.' in linked_to:
+            linked_to_full = linked_to
+        else:
+            linked_to_full = f'{self.program_name}.{linked_to}'
         return linked_to, linked_to_full
 
     @property
