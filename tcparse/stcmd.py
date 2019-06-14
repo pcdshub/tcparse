@@ -105,15 +105,13 @@ def run(args):
              desc=f'{motor.name} / {nc_axis.short_name}',
              egu=nc_axis.units,
              prec=3,
+             additional_fields='',
              )
         for motor, nc_axis in motors
     ]
 
-    if motors:
-        # TODO: for now, only support a single virtual PLC for all motors
-        ads_port = motors[0][0].module.ads_port
-    else:
-        ads_port = 851
+    # TODO: for now, only support a single virtual PLC for all motors
+    ads_port = motors[0][0].module.ads_port if motors else 851
 
     template_args = dict(
         binary_name=args.binary,
