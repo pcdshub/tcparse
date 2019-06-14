@@ -142,8 +142,10 @@ def render(args):
              desc=f'{motor.name} / {nc_axis.short_name}',
              egu=nc_axis.units,
              prec=get_pytmc(motor, nc_axis, 'precision') or '3',
-             additional_fields=get_pytmc(motor, nc_axis, 'additional_fields') or '',
-             amplifier_flags=get_pytmc(motor, nc_axis, 'amplifier_flags') or '0',
+             additional_fields=get_pytmc(motor, nc_axis,
+                                         'additional_fields') or '',
+             amplifier_flags=get_pytmc(motor, nc_axis,
+                                       'amplifier_flags') or '0',
              )
         for motor, nc_axis in motors
     ]
