@@ -51,6 +51,10 @@ asynSetTraceIOMask("$(ASYN_PORT)", -1, 2)
 #define ASYN_TRACEINFO_THREAD 0x0008
 asynSetTraceInfoMask("$(ASYN_PORT)", -1, 5)
 
+#define AMPLIFIER_ON_FLAG_CREATE_AXIS  1
+#define AMPLIFIER_ON_FLAG_WHEN_HOMING  2
+#define AMPLIFIER_ON_FLAG_USING_CNEN   4
+
 {% for motor in motors %}
 epicsEnvSet("AXISCONFIG",      "{{motor.axisconfig}}")
 epicsEnvSet("MOTOR_NAME",      "{{motor.name}}")
@@ -59,8 +63,9 @@ epicsEnvSet("DESC",            "{{motor.desc}}")
 epicsEnvSet("EGU",             "{{motor.egu}}")
 epicsEnvSet("PREC",            "{{motor.prec}}")
 epicsEnvSet("ECAXISFIELDINIT", "{{motor.additional_fields}}")
+epicsEnvSet("AMPLIFIER_FLAGS", "{{motor.amplifier_flags}}")
 
-EthercatMCCreateAxis("$(MOTOR_PORT)", "$(AXIS_NO)", "6", "$(AXISCONFIG)")
+EthercatMCCreateAxis("$(MOTOR_PORT)", "$(AXIS_NO)", "$(AMPLIFIER_FLAGS)", "$(AXISCONFIG)")
 dbLoadRecords("EthercatMC.template", "PREFIX=$(PREFIX), MOTOR_NAME=$(MOTOR_NAME), R=$(MOTOR_NAME)-, MOTOR_PORT=$(MOTOR_PORT), ASYN_PORT=$(ASYN_PORT), AXIS_NO=$(AXIS_NO), DESC=$(DESC), PREC=$(PREC) $(ECAXISFIELDINIT)")
 dbLoadRecords("EthercatMCreadback.template", "PREFIX=$(PREFIX), MOTOR_NAME=$(MOTOR_NAME), R=$(MOTOR_NAME)-, MOTOR_PORT=$(MOTOR_PORT), ASYN_PORT=$(ASYN_PORT), AXIS_NO=$(AXIS_NO), DESC=$(DESC), PREC=$(PREC) ")
 dbLoadRecords("EthercatMCdebug.template", "PREFIX=$(PREFIX), MOTOR_NAME=$(MOTOR_NAME), MOTOR_PORT=$(MOTOR_PORT), AXIS_NO=$(AXIS_NO), PREC=3")
