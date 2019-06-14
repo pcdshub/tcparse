@@ -106,6 +106,7 @@ def run(args):
              egu=nc_axis.units,
              prec=3,
              additional_fields='',
+             amplifier_flags=0,
              )
         for motor, nc_axis in motors
     ]
