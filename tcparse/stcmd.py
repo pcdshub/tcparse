@@ -96,6 +96,14 @@ def render(args):
               for motor in project.find(Symbol_FB_DriveVirtual)]
 
     def get_pytmc(motor, nc_axis, key):
+        '''
+        Find a pytmc pragma by key
+
+        Returns
+        -------
+        value : str or None
+            The first value found, if any
+        '''
         if pytmc is None:
             return None
 
@@ -106,10 +114,14 @@ def render(args):
 
     def get_name(motor, nc_axis):
         'Returns: (motor_prefix, motor_name)'
+        # First check if there is a pytmc pragma
         tmc_name = get_pytmc(motor, nc_axis, 'pv')
         if tmc_name is not None:
+            # PV name specified in the pragma - use it as-is
             return '', tmc_name
 
+        # Fall back to using the NC axis name, replacing underscores/spaces
+        # with the user-specified delimiter
         name = nc_axis.short_name
         name = name.replace(' ', args.delim)
         return args.prefix + args.delim, name.replace('_', args.delim)
@@ -120,7 +132,7 @@ def render(args):
                     for prop in motor.find(Property)
                     if prop.name == 'pytmc'
                     ]
-            for motor, nc_axis in motors
+            for motor, _ in motors
         }
 
     template_motors = [
