@@ -1,0 +1,293 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Templates &mdash; tcparse  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> tcparse
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="stcmd.html">tcparse.stcmd</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stcmd.html#templates">Templates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">tcparse.parse API</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pcdshub/tcparse">Github Repository</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">tcparse</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Templates</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/templates.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="templates">
+<h1>Templates<a class="headerlink" href="#templates" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="stcmd-default-cmd">
+<h2>stcmd_default.cmd<a class="headerlink" href="#stcmd-default-cmd" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!../../bin/rhel7-x86_64/{{binary_name}}</span>
+
+<span class="o">&lt;</span> <span class="n">envPaths</span>
+<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;IOCNAME&quot;</span><span class="p">,</span> <span class="s2">&quot;{{name}}&quot;</span> <span class="p">)</span>
+<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;ENGINEER&quot;</span><span class="p">,</span> <span class="s2">&quot;{{user}}&quot;</span> <span class="p">)</span>
+<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;LOCATION&quot;</span><span class="p">,</span> <span class="s2">&quot;{{prefix}}&quot;</span> <span class="p">)</span>
+<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;IOCSH_PS1&quot;</span><span class="p">,</span> <span class="s2">&quot;$(IOCNAME)&gt; &quot;</span> <span class="p">)</span>
+
+<span class="n">cd</span> <span class="s2">&quot;$(TOP)&quot;</span>
+
+<span class="c1"># Run common startup commands for linux soft IOC&#39;s</span>
+<span class="o">&lt;</span> <span class="o">/</span><span class="n">reg</span><span class="o">/</span><span class="n">d</span><span class="o">/</span><span class="n">iocCommon</span><span class="o">/</span><span class="n">All</span><span class="o">/</span><span class="n">pre_linux</span><span class="o">.</span><span class="n">cmd</span>
+
+<span class="c1"># Register all support components</span>
+<span class="n">dbLoadDatabase</span><span class="p">(</span><span class="s2">&quot;dbd/{{binary_name}}.dbd&quot;</span><span class="p">)</span>
+<span class="p">{{</span><span class="n">binary_name</span><span class="p">}}</span><span class="n">_registerRecordDeviceDriver</span><span class="p">(</span><span class="n">pdbbase</span><span class="p">)</span>
+
+<span class="n">cd</span> <span class="s2">&quot;$(TOP)/db&quot;</span>
+
+<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;MOTOR_PORT&quot;</span><span class="p">,</span>    <span class="s2">&quot;{{motor_port}}&quot;</span><span class="p">)</span>
+<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;ASYN_PORT&quot;</span><span class="p">,</span>     <span class="s2">&quot;{{asyn_port}}&quot;</span><span class="p">)</span>
+<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;PREFIX&quot;</span><span class="p">,</span>        <span class="s2">&quot;{{prefix}}{{delim}}&quot;</span><span class="p">)</span>
+<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;ECM_NUMAXES&quot;</span><span class="p">,</span>   <span class="s2">&quot;{{motors|length}}&quot;</span><span class="p">)</span>
+<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;NUMAXES&quot;</span><span class="p">,</span>       <span class="s2">&quot;{{motors|length}}&quot;</span><span class="p">)</span>
+
+<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;IPADDR&quot;</span><span class="p">,</span>        <span class="s2">&quot;{{plc_ip}}&quot;</span><span class="p">)</span>
+<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;AMSID&quot;</span><span class="p">,</span>         <span class="s2">&quot;{{plc_ams_id}}&quot;</span><span class="p">)</span>
+<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;IPPORT&quot;</span><span class="p">,</span>        <span class="s2">&quot;{{plc_ads_port}}&quot;</span><span class="p">)</span>
+
+<span class="n">adsAsynPortDriverConfigure</span><span class="p">(</span><span class="s2">&quot;$(ASYN_PORT)&quot;</span><span class="p">,</span><span class="s2">&quot;$(IPADDR)&quot;</span><span class="p">,</span><span class="s2">&quot;$(AMSID)&quot;</span><span class="p">,</span><span class="s2">&quot;$(IPPORT)&quot;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">EthercatMCCreateController</span><span class="p">(</span><span class="s2">&quot;$(MOTOR_PORT)&quot;</span><span class="p">,</span> <span class="s2">&quot;$(ASYN_PORT)&quot;</span><span class="p">,</span> <span class="s2">&quot;$(NUMAXES)&quot;</span><span class="p">,</span> <span class="s2">&quot;200&quot;</span><span class="p">,</span> <span class="s2">&quot;1000&quot;</span><span class="p">)</span>
+
+<span class="c1">#define ASYN_TRACE_ERROR     0x0001</span>
+<span class="c1">#define ASYN_TRACEIO_DEVICE  0x0002</span>
+<span class="c1">#define ASYN_TRACEIO_FILTER  0x0004</span>
+<span class="c1">#define ASYN_TRACEIO_DRIVER  0x0008</span>
+<span class="c1">#define ASYN_TRACE_FLOW      0x0010</span>
+<span class="c1">#define ASYN_TRACE_WARNING   0x0020</span>
+<span class="c1">#define ASYN_TRACE_INFO      0x0040</span>
+<span class="n">asynSetTraceMask</span><span class="p">(</span><span class="s2">&quot;$(ASYN_PORT)&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mh">0x41</span><span class="p">)</span>
+
+<span class="c1">#define ASYN_TRACEIO_NODATA 0x0000</span>
+<span class="c1">#define ASYN_TRACEIO_ASCII  0x0001</span>
+<span class="c1">#define ASYN_TRACEIO_ESCAPE 0x0002</span>
+<span class="c1">#define ASYN_TRACEIO_HEX    0x0004</span>
+<span class="n">asynSetTraceIOMask</span><span class="p">(</span><span class="s2">&quot;$(ASYN_PORT)&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="c1">#define ASYN_TRACEINFO_TIME 0x0001</span>
+<span class="c1">#define ASYN_TRACEINFO_PORT 0x0002</span>
+<span class="c1">#define ASYN_TRACEINFO_SOURCE 0x0004</span>
+<span class="c1">#define ASYN_TRACEINFO_THREAD 0x0008</span>
+<span class="n">asynSetTraceInfoMask</span><span class="p">(</span><span class="s2">&quot;$(ASYN_PORT)&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+
+<span class="p">{</span><span class="o">%</span> <span class="k">for</span> <span class="n">motor</span> <span class="ow">in</span> <span class="n">motors</span> <span class="o">%</span><span class="p">}</span>
+<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;AXISCONFIG&quot;</span><span class="p">,</span>      <span class="s2">&quot;{{motor.axisconfig}}&quot;</span><span class="p">)</span>
+<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;MOTOR_NAME&quot;</span><span class="p">,</span>      <span class="s2">&quot;{{motor.name}}&quot;</span><span class="p">)</span>
+<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;AXIS_NO&quot;</span><span class="p">,</span>         <span class="s2">&quot;{{motor.axis_no}}&quot;</span><span class="p">)</span>
+<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;DESC&quot;</span><span class="p">,</span>            <span class="s2">&quot;{{motor.desc}}&quot;</span><span class="p">)</span>
+<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;EGU&quot;</span><span class="p">,</span>             <span class="s2">&quot;{{motor.egu}}&quot;</span><span class="p">)</span>
+<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;PREC&quot;</span><span class="p">,</span>            <span class="s2">&quot;{{motor.prec}}&quot;</span><span class="p">)</span>
+<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;ECAXISFIELDINIT&quot;</span><span class="p">,</span> <span class="s2">&quot;{{motor.additional_fields}}&quot;</span><span class="p">)</span>
+
+<span class="n">EthercatMCCreateAxis</span><span class="p">(</span><span class="s2">&quot;$(MOTOR_PORT)&quot;</span><span class="p">,</span> <span class="s2">&quot;$(AXIS_NO)&quot;</span><span class="p">,</span> <span class="s2">&quot;6&quot;</span><span class="p">,</span> <span class="s2">&quot;$(AXISCONFIG)&quot;</span><span class="p">)</span>
+<span class="n">dbLoadRecords</span><span class="p">(</span><span class="s2">&quot;EthercatMC.template&quot;</span><span class="p">,</span> <span class="s2">&quot;PREFIX=$(PREFIX), MOTOR_NAME=$(MOTOR_NAME), R=$(MOTOR_NAME)-, MOTOR_PORT=$(MOTOR_PORT), ASYN_PORT=$(ASYN_PORT), AXIS_NO=$(AXIS_NO), DESC=$(DESC), PREC=$(PREC) $(ECAXISFIELDINIT)&quot;</span><span class="p">)</span>
+<span class="n">dbLoadRecords</span><span class="p">(</span><span class="s2">&quot;EthercatMCreadback.template&quot;</span><span class="p">,</span> <span class="s2">&quot;PREFIX=$(PREFIX), MOTOR_NAME=$(MOTOR_NAME), R=$(MOTOR_NAME)-, MOTOR_PORT=$(MOTOR_PORT), ASYN_PORT=$(ASYN_PORT), AXIS_NO=$(AXIS_NO), DESC=$(DESC), PREC=$(PREC) &quot;</span><span class="p">)</span>
+<span class="n">dbLoadRecords</span><span class="p">(</span><span class="s2">&quot;EthercatMCdebug.template&quot;</span><span class="p">,</span> <span class="s2">&quot;PREFIX=$(PREFIX), MOTOR_NAME=$(MOTOR_NAME), MOTOR_PORT=$(MOTOR_PORT), AXIS_NO=$(AXIS_NO), PREC=3&quot;</span><span class="p">)</span>
+
+<span class="p">{</span><span class="o">%</span> <span class="n">endfor</span> <span class="o">%</span><span class="p">}</span>
+<span class="n">cd</span> <span class="s2">&quot;$(TOP)&quot;</span>
+
+<span class="n">dbLoadRecords</span><span class="p">(</span><span class="s2">&quot;db/iocAdmin.db&quot;</span><span class="p">,</span> <span class="s2">&quot;P={{prefix}},IOC={{prefix}}&quot;</span> <span class="p">)</span>
+<span class="n">dbLoadRecords</span><span class="p">(</span><span class="s2">&quot;db/save_restoreStatus.db&quot;</span><span class="p">,</span> <span class="s2">&quot;P={{prefix}},IOC={{name}}&quot;</span> <span class="p">)</span>
+
+<span class="c1"># Setup autosave</span>
+<span class="n">set_savefile_path</span><span class="p">(</span> <span class="s2">&quot;$(IOC_DATA)/$(IOC)/autosave&quot;</span> <span class="p">)</span>
+<span class="n">set_requestfile_path</span><span class="p">(</span> <span class="s2">&quot;$(TOP)/autosave&quot;</span> <span class="p">)</span>
+<span class="n">save_restoreSet_status_prefix</span><span class="p">(</span> <span class="s2">&quot;{{prefix}}:&quot;</span> <span class="p">)</span>
+<span class="n">save_restoreSet_IncompleteSetsOk</span><span class="p">(</span> <span class="mi">1</span> <span class="p">)</span>
+<span class="n">save_restoreSet_DatedBackupFiles</span><span class="p">(</span> <span class="mi">1</span> <span class="p">)</span>
+<span class="n">set_pass0_restoreFile</span><span class="p">(</span> <span class="s2">&quot;$(IOC).sav&quot;</span> <span class="p">)</span>
+<span class="n">set_pass1_restoreFile</span><span class="p">(</span> <span class="s2">&quot;$(IOC).sav&quot;</span> <span class="p">)</span>
+
+<span class="c1"># Initialize the IOC and start processing records</span>
+<span class="n">iocInit</span><span class="p">()</span>
+
+<span class="c1"># Start autosave backups</span>
+<span class="n">create_monitor_set</span><span class="p">(</span> <span class="s2">&quot;$(IOC).req&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;&quot;</span> <span class="p">)</span>
+
+<span class="c1"># All IOCs should dump some common info after initial startup.</span>
+<span class="o">&lt;</span> <span class="o">/</span><span class="n">reg</span><span class="o">/</span><span class="n">d</span><span class="o">/</span><span class="n">iocCommon</span><span class="o">/</span><span class="n">All</span><span class="o">/</span><span class="n">post_linux</span><span class="o">.</span><span class="n">cmd</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, SLAC National Accelerator Laboratory
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

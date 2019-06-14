@@ -10,6 +10,10 @@ Welcome to tcparse's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   stcmd.rst
+   api.rst
+
+
 .. toctree::
    :maxdepth: 1
    :caption: Links
