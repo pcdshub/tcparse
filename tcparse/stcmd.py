@@ -65,12 +65,7 @@ def build_arg_parser():
     return parser
 
 
-def main(*, cmdline_args=None):
-    parser = build_arg_parser()
-    return run(parser.parse_args(cmdline_args))
-
-
-def run(args):
+def render(args):
     logger = logging.getLogger('tcparse')
     logger.setLevel(args.log)
     logging.basicConfig()
@@ -131,3 +126,9 @@ def run(args):
     )
 
     return template.render(**template_args)
+
+
+def main(*, cmdline_args=None):
+    parser = build_arg_parser()
+    template = render(parser.parse_args(cmdline_args))
+    print(template)
