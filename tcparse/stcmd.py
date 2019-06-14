@@ -12,7 +12,14 @@ import pathlib
 
 import jinja2
 
-from .parse import load_project, Symbol_FB_DriveVirtual
+try:
+    import pytmc
+except ImportError:
+    pytmc = None
+else:
+    from pytmc.xml_obj import Configuration as PytmcConfiguration
+
+from .parse import load_project, Symbol_FB_DriveVirtual, Property
 
 
 description = __doc__
@@ -88,20 +95,43 @@ def render(args):
     motors = [(motor, motor.nc_axis)
               for motor in project.find(Symbol_FB_DriveVirtual)]
 
-    def get_name(nc_axis):
+    def get_pytmc(motor, nc_axis, key):
+        if pytmc is None:
+            return None
+
+        for config in pytmc_info[motor]:
+            matches = config.get_config_lines(key)
+            if matches:
+                return matches[0]['tag']
+
+    def get_name(motor, nc_axis):
+        'Returns: (motor_prefix, motor_name)'
+        tmc_name = get_pytmc(motor, nc_axis, 'pv')
+        if tmc_name is not None:
+            return '', tmc_name
+
         name = nc_axis.short_name
         name = name.replace(' ', args.delim)
-        return name.replace('_', args.delim)
+        return args.prefix + args.delim, name.replace('_', args.delim)
+
+    if pytmc is not None:
+        pytmc_info = {
+            motor: [PytmcConfiguration(prop.Value[0].text)
+                    for prop in motor.find(Property)
+                    if prop.name == 'pytmc'
+                    ]
+            for motor, nc_axis in motors
+        }
 
     template_motors = [
         dict(axisconfig='',
-             name=get_name(nc_axis),
+             name=get_name(motor, nc_axis),
              axis_no=nc_axis.axis_number,
              desc=f'{motor.name} / {nc_axis.short_name}',
              egu=nc_axis.units,
-             prec=3,
-             additional_fields='',
-             amplifier_flags=0,
+             prec=get_pytmc(motor, nc_axis, 'precision') or '3',
+             additional_fields=get_pytmc(motor, nc_axis, 'additional_fields') or '',
+             amplifier_flags=get_pytmc(motor, nc_axis, 'amplifier_flags') or '0',
              )
         for motor, nc_axis in motors
     ]
@@ -125,10 +155,10 @@ def render(args):
         motors=template_motors,
     )
 
-    return template.render(**template_args)
+    return project, motors, template.render(**template_args)
 
 
 def main(*, cmdline_args=None):
     parser = build_arg_parser()
-    template = render(parser.parse_args(cmdline_args))
+    _, _, template = render(parser.parse_args(cmdline_args))
     print(template)
