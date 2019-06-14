@@ -23,14 +23,15 @@ def _register_type(cls):
 
 def separate_children_by_tag(children):
     '''
-    Take in a list of `TwincatItem`s, categorize each by their XML tag, and
+    Take in a list of `TwincatItem`, categorize each by their XML tag, and
     return a dictionary keyed on tag.
 
     For example::
 
         <a> <a> <b> <b>
 
-        Would become:
+    Would become::
+
         {'a': [<a>, <a>],
          'b': [<b>, <b>]
          }
@@ -787,7 +788,8 @@ def variables_from_declaration(declaration):
 
     Returns
     -------
-    {'var': {'type': 'TYPE', 'spec': '%I'}, ...}
+    variables : dict
+        {'var': {'type': 'TYPE', 'spec': '%I'}, ...}
     '''
     # TODO: this has not been tested well at all
     variables = {}
