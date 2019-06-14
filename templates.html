@@ -208,6 +208,10 @@
 <span class="c1">#define ASYN_TRACEINFO_THREAD 0x0008</span>
 <span class="n">asynSetTraceInfoMask</span><span class="p">(</span><span class="s2">&quot;$(ASYN_PORT)&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 
+<span class="c1">#define AMPLIFIER_ON_FLAG_CREATE_AXIS  1</span>
+<span class="c1">#define AMPLIFIER_ON_FLAG_WHEN_HOMING  2</span>
+<span class="c1">#define AMPLIFIER_ON_FLAG_USING_CNEN   4</span>
+
 <span class="p">{</span><span class="o">%</span> <span class="k">for</span> <span class="n">motor</span> <span class="ow">in</span> <span class="n">motors</span> <span class="o">%</span><span class="p">}</span>
 <span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;AXISCONFIG&quot;</span><span class="p">,</span>      <span class="s2">&quot;{{motor.axisconfig}}&quot;</span><span class="p">)</span>
 <span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;MOTOR_NAME&quot;</span><span class="p">,</span>      <span class="s2">&quot;{{motor.name}}&quot;</span><span class="p">)</span>
@@ -216,8 +220,9 @@
 <span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;EGU&quot;</span><span class="p">,</span>             <span class="s2">&quot;{{motor.egu}}&quot;</span><span class="p">)</span>
 <span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;PREC&quot;</span><span class="p">,</span>            <span class="s2">&quot;{{motor.prec}}&quot;</span><span class="p">)</span>
 <span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;ECAXISFIELDINIT&quot;</span><span class="p">,</span> <span class="s2">&quot;{{motor.additional_fields}}&quot;</span><span class="p">)</span>
+<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;AMPLIFIER_FLAGS&quot;</span><span class="p">,</span> <span class="s2">&quot;{{motor.amplifier_flags}}&quot;</span><span class="p">)</span>
 
-<span class="n">EthercatMCCreateAxis</span><span class="p">(</span><span class="s2">&quot;$(MOTOR_PORT)&quot;</span><span class="p">,</span> <span class="s2">&quot;$(AXIS_NO)&quot;</span><span class="p">,</span> <span class="s2">&quot;6&quot;</span><span class="p">,</span> <span class="s2">&quot;$(AXISCONFIG)&quot;</span><span class="p">)</span>
+<span class="n">EthercatMCCreateAxis</span><span class="p">(</span><span class="s2">&quot;$(MOTOR_PORT)&quot;</span><span class="p">,</span> <span class="s2">&quot;$(AXIS_NO)&quot;</span><span class="p">,</span> <span class="s2">&quot;$(AMPLIFIER_FLAGS)&quot;</span><span class="p">,</span> <span class="s2">&quot;$(AXISCONFIG)&quot;</span><span class="p">)</span>
 <span class="n">dbLoadRecords</span><span class="p">(</span><span class="s2">&quot;EthercatMC.template&quot;</span><span class="p">,</span> <span class="s2">&quot;PREFIX=$(PREFIX), MOTOR_NAME=$(MOTOR_NAME), R=$(MOTOR_NAME)-, MOTOR_PORT=$(MOTOR_PORT), ASYN_PORT=$(ASYN_PORT), AXIS_NO=$(AXIS_NO), DESC=$(DESC), PREC=$(PREC) $(ECAXISFIELDINIT)&quot;</span><span class="p">)</span>
 <span class="n">dbLoadRecords</span><span class="p">(</span><span class="s2">&quot;EthercatMCreadback.template&quot;</span><span class="p">,</span> <span class="s2">&quot;PREFIX=$(PREFIX), MOTOR_NAME=$(MOTOR_NAME), R=$(MOTOR_NAME)-, MOTOR_PORT=$(MOTOR_PORT), ASYN_PORT=$(ASYN_PORT), AXIS_NO=$(AXIS_NO), DESC=$(DESC), PREC=$(PREC) &quot;</span><span class="p">)</span>
 <span class="n">dbLoadRecords</span><span class="p">(</span><span class="s2">&quot;EthercatMCdebug.template&quot;</span><span class="p">,</span> <span class="s2">&quot;PREFIX=$(PREFIX), MOTOR_NAME=$(MOTOR_NAME), MOTOR_PORT=$(MOTOR_PORT), AXIS_NO=$(AXIS_NO), PREC=3&quot;</span><span class="p">)</span>
