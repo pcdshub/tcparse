@@ -269,6 +269,16 @@ class TwincatItem:
         return parse(full_path, parent=parent)
 
 
+class _TwincatProjectSubItem(TwincatItem):
+    '''
+    [XTI, TMC, ...] A base class for items that appear in virtual PLC projects
+    '''
+    @property
+    def nested_project(self):
+        'The nested project (virtual PLC project) associated with the item'
+        return self.find_ancestor(TcSmItem_CNestedPlcProjDef)
+
+
 @_register_type
 class Module(TwincatItem):
     '''
@@ -313,7 +323,7 @@ class Link(TwincatItem):
 
 
 @_register_type
-class Symbol(TwincatItem):
+class Symbol(_TwincatProjectSubItem):
     '''
     [TMC] A basic Symbol type
 
@@ -321,11 +331,6 @@ class Symbol(TwincatItem):
     and searching.  For example, a function block defined as `FB_DriveVirtual`
     will become `Symbol_FB_DriveVirtual`.
     '''
-    @property
-    def nested_project(self):
-        'The nested project (virtual PLC project) associated with the symbol'
-        return self.find_ancestor(TcSmItem_CNestedPlcProjDef)
-
     @property
     def module(self):
         'The Module containing the Symbol'
@@ -395,11 +400,7 @@ class Symbol_FB_DriveVirtual(Symbol):
             e.g., Main.M1Link
         '''
         linked_to = self.call_block['Axis']
-        if '.' in linked_to:
-            linked_to_full = linked_to
-        else:
-            linked_to_full = f'{self.program_name}.{linked_to}'
-        return linked_to, linked_to_full
+        return linked_to, self.pou.get_fully_qualified_name(linked_to)
 
     @property
     def nc_to_plc_link(self):
@@ -438,12 +439,28 @@ class Symbol_FB_DriveVirtual(Symbol):
 
 
 @_register_type
-class POU(TwincatItem):
+class GVL(_TwincatProjectSubItem):
+    '''
+    [XTI] A Global Variable List
+    '''
+    ...
+
+
+@_register_type
+class POU(_TwincatProjectSubItem):
     '''
     [XTI] A Program Organization Unit
     '''
 
     # TODO: may fail when mixed with ladder logic?
+
+    def get_fully_qualified_name(self, name):
+        if '.' in name:
+            first, rest = name.split('.', 1)
+            if (first == self.name or first in self.nested_project.namespaces):
+                return name
+
+        return f'{self.name}.{name}'
 
     @property
     def declaration(self):
@@ -649,6 +666,7 @@ class TcSmItem_CNestedPlcProjDef(TcSmItem):
             for compile in self.find(Compile)
             if 'Include' in compile.attributes
         ]
+
         self.source = {
             str(fn.relative_to(self.project.filename.parent)):
             parse(fn, parent=self)
@@ -662,6 +680,16 @@ class TcSmItem_CNestedPlcProjDef(TcSmItem):
             and plc_obj.POU[0].program_name
         }
 
+        self.gvl_by_name = {
+            plc_obj.GVL[0].name: plc_obj.GVL[0]
+            for plc_obj in self.source.values()
+            if hasattr(plc_obj, 'GVL')
+            and plc_obj.GVL[0].name
+        }
+
+        self.namespaces = dict(self.pou_by_name)
+        self.namespaces.update(self.gvl_by_name)
+
     def find(self, cls):
         yield from super().find(cls)
         if self.project is not None:
@@ -674,10 +702,10 @@ class TcSmItem_CNestedPlcProjDef(TcSmItem):
 @_register_type
 class Compile(TwincatItem):
     '''
-    [XTI] An entry in a nested/virtual PLC project
+    [XTI] A code entry in a nested/virtual PLC project
 
     File to load is marked with 'Include'
-    May be TcTTO, TcPOU, TcDUT, etc.
+    May be TcTTO, TcPOU, TcDUT, GVL, etc.
     '''
     ...
 
