@@ -9,6 +9,7 @@ import argparse
 import getpass
 import logging
 import pathlib
+import sys
 
 import jinja2
 
@@ -18,6 +19,7 @@ except ImportError:
     pytmc = None
 else:
     from pytmc.xml_obj import Configuration as PytmcConfiguration
+    from pytmc.bin.pytmc import process as pytmc_process, LinterError
 
 from .parse import load_project, Symbol_FB_DriveVirtual, Property
 
@@ -52,6 +54,21 @@ def build_arg_parser():
     )
 
     parser.add_argument(
+        '--only-motors', default=False, action='store_true',
+        help='Do not parse TMC file for non-motor records'
+    )
+
+    parser.add_argument(
+        '--db-path', type=str, default='.',
+        help='Path for db files'
+    )
+
+    parser.add_argument(
+        '--dbd', type=str, default=None,
+        help='Path to the IOC dbd file'
+    )
+
+    parser.add_argument(
         '--delim', type=str, default=':',
         help='Preferred PV delimiter'
     )
@@ -64,7 +81,7 @@ def build_arg_parser():
     parser.add_argument(
         '--log',
         '-l',
-        default='WARNING',  # WARN level messages
+        default='INFO',
         type=str,
         help='Python logging level (e.g. DEBUG, INFO, WARNING)'
     )
@@ -72,9 +89,28 @@ def build_arg_parser():
     return parser
 
 
+def render_pytmc(tmc_file, *, dbd=None, allow_errors=False,
+                 show_error_context=True):
+    with open(tmc_file, 'r') as tmc_file:
+        tmc_file_obj = pytmc.TmcFile(tmc_file)
+
+    try:
+        pytmc_process(
+            tmc_file_obj, dbd_file=dbd, allow_errors=allow_errors,
+            show_error_context=show_error_context,
+        )
+    except LinterError:
+        sys.exit(1)
+
+    return tmc_file_obj.render()
+
+
 def render(args):
     logger = logging.getLogger('tcparse')
     logger.setLevel(args.log)
+
+    pytmc_logger = logging.getLogger('pytmc')
+    pytmc_logger.setLevel(args.log)
     logging.basicConfig()
 
     jinja_env = jinja2.Environment(
@@ -153,6 +189,25 @@ def render(args):
     # TODO: for now, only support a single virtual PLC for all motors
     ads_port = motors[0][0].module.ads_port if motors else 851
 
+    additional_db_files = []
+    if not args.only_motors:
+        if pytmc is None:
+            logger.error('pytmc unavailable; '
+                         'did you mean to use --only-motors?')
+            sys.exit(1)
+        for proj in project.nested_projects:
+            rendered_db = render_pytmc(proj.tmc.filename, dbd=args.dbd)
+            if not rendered_db:
+                logger.info('No additional records from pytmc found in %s',
+                            proj.tmc.filename)
+                continue
+
+            db_filename = f'{proj.filename.stem}.db'
+            db_path = pathlib.Path(args.db_path) / db_filename
+            with open(db_path, 'wt') as db_file:
+                db_file.write(rendered_db)
+            additional_db_files.append({'file': db_filename, 'macros': ''})
+
     template_args = dict(
         binary_name=args.binary,
         name=args.name,
@@ -167,6 +222,7 @@ def render(args):
         plc_ads_port=ads_port,
 
         motors=template_motors,
+        additional_db_files=additional_db_files,
     )
 
     return project, motors, template.render(**template_args)

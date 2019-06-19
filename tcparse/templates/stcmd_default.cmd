@@ -72,6 +72,10 @@ dbLoadRecords("EthercatMCreadback.template", "PREFIX=$(MOTOR_PREFIX), MOTOR_NAME
 dbLoadRecords("EthercatMCdebug.template", "PREFIX=$(MOTOR_PREFIX), MOTOR_NAME=$(MOTOR_NAME), MOTOR_PORT=$(MOTOR_PORT), AXIS_NO=$(AXIS_NO), PREC=3")
 
 {% endfor %}
+{% for db in additional_db_files %}
+dbLoadRecords("db/{{ db.file }}", "{{ db.macros }}")
+
+{% endfor %}
 cd "$(TOP)"
 
 dbLoadRecords("db/iocAdmin.db", "P={{prefix}},IOC={{prefix}}" )
