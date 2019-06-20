@@ -14,10 +14,15 @@ import logging
 from .summary import (build_arg_parser as build_summary_arg_parser,
                       summary as summary_main)
 from .stcmd import (build_arg_parser as build_stcmd_arg_parser,
-                    render as stcmd_main)
+                    render as render_stcmd)
 
 
 DESCRIPTION = __doc__
+
+def stcmd_main(args):
+    _, _, template = render_stcmd(args)
+    print(template)
+
 
 COMMANDS = {
     'stcmd': (build_stcmd_arg_parser, stcmd_main),
@@ -50,6 +55,3 @@ def main():
         args.func(args)
     else:
         top_parser.print_help()
-
-
-main()

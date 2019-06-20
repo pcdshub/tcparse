@@ -4,10 +4,11 @@
 """
 
 import argparse
+import ast
 import logging
+import pathlib
 
-from .parse import load_project, Property
-
+from . import parse as parse_mod
 
 DESCRIPTION = __doc__
 
@@ -25,18 +26,43 @@ def build_arg_parser(parser=None):
     )
 
     parser.add_argument(
-        '--log',
-        '-l',
+        '--all', '-a',
+        action='store_true',
+        help='All possible information'
+    )
+
+    parser.add_argument(
+        '--plcs', '-p',
+        action='store_true',
+        help='Show plcs'
+    )
+
+    parser.add_argument(
+        '--nc', '-n',
+        action='store_true',
+        help='Show NC axes'
+    )
+
+    parser.add_argument(
+        '--symbols', '-s',
+        action='store_true',
+        help='Show symbols'
+    )
+
+    parser.add_argument(
+        '--log', '-l',
         default='INFO',
         type=str,
         help='Python logging level (e.g. DEBUG, INFO, WARNING)'
     )
 
+    parser.add_argument(
+        '--debug', '-d',
+        action='store_true',
+        help='Access'
+    )
+
     return parser
-
-
-def _summary(project):
-    print('summary', project)
 
 
 def summary(args):
@@ -44,8 +70,56 @@ def summary(args):
     logger.setLevel(args.log)
     logging.basicConfig()
 
-    project = load_project(args.tsproj_project)
-    _summary(project)
+    proj_path = pathlib.Path(args.tsproj_project)
+    project = parse_mod.load_project(proj_path)
+
+    if args.plcs or args.all:
+        for i, plc in enumerate(project.plcs, 1):
+            print(f'--- PLC Project ({i}): {plc.project_path.stem}')
+            print(f'    Project path: {plc.project_path}')
+            print(f'    TMC path:     {plc.tmc_path}')
+            print(f'')
+            proj_info = [('Source files', plc.source_filenames),
+                         ('POUs', plc.pou_by_name),
+                         ('GVLs', plc.gvl_by_name),
+                         ]
+
+            for category, items in proj_info:
+                if items:
+                    print(f'    {category}:')
+                    for j, text in enumerate(items, 1):
+                        print(f'        {j}.) {text}')
+                    print()
+
+    if args.symbols or args.all:
+        print('--- Symbols:')
+        for symbol in project.find(parse_mod.Symbol):
+            print(f'    {symbol.info}')
+        print()
+
+    if args.nc or args.all:
+        print('--- NC axes:')
+        for nc in project.find(parse_mod.NC):
+            for axis_id, axis in sorted(nc.axis_by_id.items()):
+                print(f'    {axis_id}.) {axis.short_name!r}:')
+                for category, info in axis.summarize():
+                    try:
+                        info = ast.literal_eval(info)
+                    except Exception:
+                        ...
+                    print(f'        {category} = {info!r}')
+                print()
+
+    if args.debug:
+        from tcparse import parse
+        try:
+            from IPython import embed
+        except ImportError:
+            import pdb
+            pdb.set_trace()
+        else:
+            embed()
+
     return project
 
 
