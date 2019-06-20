@@ -30,8 +30,8 @@ def test_smoke_ams_id(project):
     print(project.target_ip)
 
 
-def test_fb_drivevirtual_linking(project):
-    for inst in project.find(tcparse.Symbol_FB_DriveVirtual):
+def test_fb_motionstage_linking(project):
+    for inst in project.find(tcparse.Symbol_FB_MotionStage):
         pprint.pprint(inst)
         print('Program name', inst.program_name)
         print('Motor name', inst.motor_name)

@@ -2,7 +2,7 @@
 "tcparse-stcmd" is a command line utility for generating ESS/ethercatmc-capable
 EPICS startup st.cmd files directly from TwinCAT3 .tsproj projects.
 
-Relies on the existence (and linking) of FB_DriveVirtual function blocks.
+Relies on the existence (and linking) of FB_MotionStage function blocks.
 """
 
 import argparse
@@ -21,7 +21,7 @@ else:
     from pytmc.xml_obj import Configuration as PytmcConfiguration
     from pytmc.bin.pytmc import process as pytmc_process, LinterError
 
-from .parse import load_project, Symbol_FB_DriveVirtual, Property
+from .parse import load_project, Symbol_FB_MotionStage, Property
 
 
 description = __doc__
@@ -130,7 +130,7 @@ def render(args):
 
     project = load_project(args.tsproj_project)
     motors = [(motor, motor.nc_axis)
-              for motor in project.find(Symbol_FB_DriveVirtual)]
+              for motor in project.find(Symbol_FB_MotionStage)]
 
     def get_pytmc(motor, nc_axis, key):
         '''

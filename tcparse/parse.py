@@ -330,8 +330,8 @@ class Symbol(_TwincatProjectSubItem):
     [TMC] A basic Symbol type
 
     This is dynamically subclassed into new classes for ease of implementation
-    and searching.  For example, a function block defined as `FB_DriveVirtual`
-    will become `Symbol_FB_DriveVirtual`.
+    and searching.  For example, a function block defined as `FB_MotionStage`
+    will become `Symbol_FB_MotionStage`.
     '''
     @property
     def module(self):
@@ -349,9 +349,9 @@ class Symbol(_TwincatProjectSubItem):
 
 
 @_register_type
-class Symbol_FB_DriveVirtual(Symbol):
+class Symbol_FB_MotionStage(Symbol):
     '''
-    [TMC] A customized Symbol, representing only FB_DriveVirtual
+    [TMC] A customized Symbol, representing only FB_MotionStage
     '''
     def _repr_info(self):
         '__repr__ information'
@@ -397,11 +397,11 @@ class Symbol_FB_DriveVirtual(Symbol):
         Returns
         -------
         linked_to : str
-            e.g., M1Link
+            e.g., M1
         linked_to_full : str
-            e.g., Main.M1Link
+            e.g., Main.M1
         '''
-        linked_to = self.call_block['Axis']
+        linked_to = self.call_block['stMotionStage']
         return linked_to, self.pou.get_fully_qualified_name(linked_to)
 
     @property
@@ -409,7 +409,7 @@ class Symbol_FB_DriveVirtual(Symbol):
         '''
         The Link for NcToPlc
 
-        That is, how the NC axis is connected to the FB_DriveVirtual
+        That is, how the NC axis is connected to the FB_MotionStage
         '''
         _, linked_to_full = self.linked_to
 
@@ -420,12 +420,16 @@ class Symbol_FB_DriveVirtual(Symbol):
             and 'NcToPlc' in link.attributes['VarA']
         ]
 
+        if not links:
+            raise RuntimeError(f'No NC link to FB_MotionStage found for '
+                               f'{self.name!r} (^{linked_to_full})')
+
         link, = links
         return link
 
     @property
     def nc_axis(self):
-        'The NC `Axis` associated with the FB_DriveVirtual'
+        'The NC `Axis` associated with the FB_MotionStage'
         link = self.nc_to_plc_link
         parent_name = link.parent.name.split('^')
         if parent_name[0] == 'TINC':
@@ -436,7 +440,7 @@ class Symbol_FB_DriveVirtual(Symbol):
         nc, = list(nc for nc in self.root.find(NC)
                    if nc.SafTask[0].name == task_name)
         nc_axis = nc.axis_by_name[axis_name]
-        # link nc_axis and FB_DriveVirtual?
+        # link nc_axis and FB_MotionStage?
         return nc_axis
 
 
