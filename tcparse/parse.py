@@ -118,7 +118,7 @@ class TwincatItem:
 
     @property
     def root(self):
-        'The top-level TwincatItem'
+        'The top-level TwincatItem (likely TcSmProject)'
         parent = self
         while parent.parent is not None:
             parent = parent.parent
@@ -319,9 +319,27 @@ class Property(TwincatItem):
 
 
 @_register_type
+class OwnerA(TwincatItem):
+    '''
+    [XTC] For a Link between VarA and VarB, this is the parent of VarA
+    '''
+    ...
+
+
+@_register_type
+class OwnerB(TwincatItem):
+    '''
+    [XTC] For a Link between VarA and VarB, this is the parent of VarB
+    '''
+    ...
+
+
+@_register_type
 class Link(TwincatItem):
     '[XTI] Links between NC/PLC/IO'
-    ...
+    def post_init(self):
+        self.a = (self.find_ancestor(OwnerA).name, self.attributes.get('VarA'))
+        self.b = (self.find_ancestor(OwnerB).name, self.attributes.get('VarB'))
 
 
 @_register_type
@@ -416,7 +434,7 @@ class Symbol_FB_MotionStage(Symbol):
         links = [
             link
             for link in self.project.find(Link)
-            if '^' + linked_to_full.lower() in link.attributes['VarA'].lower()
+            if f'^{linked_to_full.lower()}' in link.attributes['VarA'].lower()
             and 'NcToPlc' in link.attributes['VarA']
         ]
 

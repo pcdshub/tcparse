@@ -50,7 +50,13 @@ def build_arg_parser(parser=None):
     )
 
     parser.add_argument(
-        '--log', '-l',
+        '--links', '-l',
+        action='store_true',
+        help='Show links'
+    )
+
+    parser.add_argument(
+        '--log',
         default='INFO',
         type=str,
         help='Python logging level (e.g. DEBUG, INFO, WARNING)'
@@ -109,6 +115,13 @@ def summary(args):
                         ...
                     print(f'        {category} = {info!r}')
                 print()
+
+    if args.links or args.all:
+        print('--- Links:')
+        for i, link in enumerate(project.find(parse_mod.Link), 1):
+            print(f'    {i}.) A {link.a}')
+            print(f'          B {link.b}')
+        print()
 
     if args.debug:
         from tcparse import parse
