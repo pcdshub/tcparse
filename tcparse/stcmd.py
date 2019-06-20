@@ -191,19 +191,22 @@ def render(args):
     ads_port = motors[0][0].module.ads_port if motors else 851
 
     additional_db_files = []
+    try:
+        plc, = project.plcs
+    except TypeError:
+        raise RuntimeError('Only single PLC projects supported currently')
+
     if args.all_records:
         if pytmc is None:
             logger.error('pytmc unavailable; cannot use --all-records.')
             sys.exit(1)
 
-        for proj in project.plcs:
-            rendered_db = render_pytmc(proj.tmc.filename, dbd=args.dbd)
-            if not rendered_db:
-                logger.info('No additional records from pytmc found in %s',
-                            proj.tmc.filename)
-                continue
-
-            db_filename = f'{proj.filename.stem}.db'
+        rendered_db = render_pytmc(plc.tmc.filename, dbd=args.dbd)
+        if not rendered_db:
+            logger.info('No additional records from pytmc found in %s',
+                        plc.tmc.filename)
+        else:
+            db_filename = f'{plc.filename.stem}.db'
             db_path = pathlib.Path(args.db_path) / db_filename
             with open(db_path, 'wt') as db_file:
                 db_file.write(rendered_db)
@@ -218,8 +221,8 @@ def render(args):
 
         motor_port='PLC_ADS',
         asyn_port='ASYN_PLC',
-        plc_ams_id=project.ams_id,
-        plc_ip=project.target_ip,
+        plc_ams_id=plc.project.ams_id,
+        plc_ip=plc.project.target_ip,
         plc_ads_port=ads_port,
 
         motors=template_motors,

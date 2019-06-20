@@ -277,6 +277,7 @@ class _TwincatProjectSubItem(TwincatItem):
     @property
     def project(self):
         'The nested project (virtual PLC project) associated with the item'
+        # TODO this is wrong... can't consistently find Mappings...
         ancestor = self.find_ancestor(TcSmItem_CNestedPlcProjDef)
         return ancestor if ancestor else self.find_ancestor(Plc)
 
@@ -391,7 +392,11 @@ class Symbol_FB_MotionStage(Symbol):
     @property
     def pou(self):
         'The POU program associated with the Symbol'
-        return self.project.pou_by_name[self.program_name]
+        # TODO: hack
+        for pou in self.root.find(POU):
+            if pou.name == self.program_name:
+                return pou
+        # return self.project.pou_by_name[self.program_name]
 
     @property
     def call_block(self):
@@ -622,7 +627,7 @@ class Encoder(TwincatItem):
 @_register_type
 class Project(TwincatItem):
     '''
-    [tsproj] A top-level project
+    [tsproj] A project which contains Plc, Io, Mappings, etc.
     '''
     _load_path = pathlib.Path('_Config') / 'PLC'
 
@@ -643,6 +648,12 @@ class Project(TwincatItem):
             return ams_id[:-4]
         return ams_id  # :(
 
+
+@_register_type
+class TcSmProject(TwincatItem):
+    '''
+    [tsproj] A top-level TwinCAT tsproj
+    '''
     @property
     def plcs(self):
         'The nested projects (virtual PLC project) contained in this Project'
@@ -684,6 +695,7 @@ class Plc(TwincatItem):
     [XTI] A Plc Project
     '''
     def post_init(self):
+        self.namespaces = {}
         if hasattr(self, 'Project'):
             proj = self.Project[0]
         else:
@@ -729,13 +741,17 @@ class Plc(TwincatItem):
             and plc_obj.GVL[0].name
         }
 
-        self.namespaces = dict(self.pou_by_name)
+        self.namespaces.update(self.pou_by_name)
         self.namespaces.update(self.gvl_by_name)
 
     def find(self, cls):
         yield from super().find(cls)
         if self.project is not None:
             yield from self.project.find(cls)
+
+        for key, ns in self.namespaces.items():
+            if isinstance(ns, cls):
+                yield ns
 
         if self.tmc is not None:
             yield from self.tmc.find(cls)
@@ -942,10 +958,7 @@ def load_project(fn):
     if fn.suffix.lower() != '.tsproj':
         raise ValueError('Expected a .tsproj file')
 
-    project = parse(fn)
-    project = project.Project[0]
-    project.parent = None
-    return project
+    return parse(fn)
 
 
 def case_insensitive_path(path):
