@@ -1,3 +1,4 @@
+import pytest
 import tcparse
 import pprint
 
@@ -25,6 +26,7 @@ def test_module_ads_port(project):
         assert inst.ads_port == 851  # probably!
 
 
+@pytest.mark.xfail(reason='TODO / project')
 def test_smoke_ams_id(project):
     print(project.ams_id)
     print(project.target_ip)
