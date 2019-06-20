@@ -170,6 +170,7 @@ EPICS startup st.cmd files directly from TwinCAT3 .tsproj projects.</p>
 <p>Relies on the existence (and linking) of FB_DriveVirtual function blocks.</p>
 </p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">tcparse</span><span class="o">-</span><span class="n">stcmd</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">p</span> <span class="n">PREFIX</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">binary</span> <span class="n">BINARY</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">n</span> <span class="n">NAME</span><span class="p">]</span>
+                     <span class="p">[</span><span class="o">--</span><span class="nb">all</span><span class="o">-</span><span class="n">records</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">db</span><span class="o">-</span><span class="n">path</span> <span class="n">DB_PATH</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">dbd</span> <span class="n">DBD</span><span class="p">]</span>
                      <span class="p">[</span><span class="o">--</span><span class="n">delim</span> <span class="n">DELIM</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">template</span> <span class="n">TEMPLATE</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">log</span> <span class="n">LOG</span><span class="p">]</span>
                      <span class="n">tsproj_project</span>
 </pre></div>
@@ -195,6 +196,17 @@ EPICS startup st.cmd files directly from TwinCAT3 .tsproj projects.</p>
 <dt><kbd>-n, --name</kbd></dt>
 <dd><p>IOC name (defaults to project name)</p>
 </dd>
+<dt><kbd>--all-records</kbd></dt>
+<dd><p>Parse the TMC file for non-motor records as well</p>
+<p>Default: False</p>
+</dd>
+<dt><kbd>--db-path</kbd></dt>
+<dd><p>Path for db files</p>
+<p>Default: “.”</p>
+</dd>
+<dt><kbd>--dbd</kbd></dt>
+<dd><p>Path to the IOC dbd file</p>
+</dd>
 <dt><kbd>--delim</kbd></dt>
 <dd><p>Preferred PV delimiter</p>
 <p>Default: “:”</p>
@@ -205,7 +217,7 @@ EPICS startup st.cmd files directly from TwinCAT3 .tsproj projects.</p>
 </dd>
 <dt><kbd>--log, -l</kbd></dt>
 <dd><p>Python logging level (e.g. DEBUG, INFO, WARNING)</p>
-<p>Default: “WARNING”</p>
+<p>Default: “INFO”</p>
 </dd>
 </dl>
 </div>
@@ -273,18 +285,23 @@ EPICS startup st.cmd files directly from TwinCAT3 .tsproj projects.</p>
 
 <span class="p">{</span><span class="o">%</span> <span class="k">for</span> <span class="n">motor</span> <span class="ow">in</span> <span class="n">motors</span> <span class="o">%</span><span class="p">}</span>
 <span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;AXISCONFIG&quot;</span><span class="p">,</span>      <span class="s2">&quot;{{motor.axisconfig}}&quot;</span><span class="p">)</span>
-<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;MOTOR_NAME&quot;</span><span class="p">,</span>      <span class="s2">&quot;{{motor.name}}&quot;</span><span class="p">)</span>
 <span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;AXIS_NO&quot;</span><span class="p">,</span>         <span class="s2">&quot;{{motor.axis_no}}&quot;</span><span class="p">)</span>
 <span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;DESC&quot;</span><span class="p">,</span>            <span class="s2">&quot;{{motor.desc}}&quot;</span><span class="p">)</span>
 <span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;EGU&quot;</span><span class="p">,</span>             <span class="s2">&quot;{{motor.egu}}&quot;</span><span class="p">)</span>
 <span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;PREC&quot;</span><span class="p">,</span>            <span class="s2">&quot;{{motor.prec}}&quot;</span><span class="p">)</span>
 <span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;ECAXISFIELDINIT&quot;</span><span class="p">,</span> <span class="s2">&quot;{{motor.additional_fields}}&quot;</span><span class="p">)</span>
 <span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;AMPLIFIER_FLAGS&quot;</span><span class="p">,</span> <span class="s2">&quot;{{motor.amplifier_flags}}&quot;</span><span class="p">)</span>
+<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;MOTOR_PREFIX&quot;</span><span class="p">,</span>    <span class="s2">&quot;{{motor.name[0]}}&quot;</span><span class="p">)</span>
+<span class="n">epicsEnvSet</span><span class="p">(</span><span class="s2">&quot;MOTOR_NAME&quot;</span><span class="p">,</span>      <span class="s2">&quot;{{motor.name[1]}}&quot;</span><span class="p">)</span>
 
 <span class="n">EthercatMCCreateAxis</span><span class="p">(</span><span class="s2">&quot;$(MOTOR_PORT)&quot;</span><span class="p">,</span> <span class="s2">&quot;$(AXIS_NO)&quot;</span><span class="p">,</span> <span class="s2">&quot;$(AMPLIFIER_FLAGS)&quot;</span><span class="p">,</span> <span class="s2">&quot;$(AXISCONFIG)&quot;</span><span class="p">)</span>
-<span class="n">dbLoadRecords</span><span class="p">(</span><span class="s2">&quot;EthercatMC.template&quot;</span><span class="p">,</span> <span class="s2">&quot;PREFIX=$(PREFIX), MOTOR_NAME=$(MOTOR_NAME), R=$(MOTOR_NAME)-, MOTOR_PORT=$(MOTOR_PORT), ASYN_PORT=$(ASYN_PORT), AXIS_NO=$(AXIS_NO), DESC=$(DESC), PREC=$(PREC) $(ECAXISFIELDINIT)&quot;</span><span class="p">)</span>
-<span class="n">dbLoadRecords</span><span class="p">(</span><span class="s2">&quot;EthercatMCreadback.template&quot;</span><span class="p">,</span> <span class="s2">&quot;PREFIX=$(PREFIX), MOTOR_NAME=$(MOTOR_NAME), R=$(MOTOR_NAME)-, MOTOR_PORT=$(MOTOR_PORT), ASYN_PORT=$(ASYN_PORT), AXIS_NO=$(AXIS_NO), DESC=$(DESC), PREC=$(PREC) &quot;</span><span class="p">)</span>
-<span class="n">dbLoadRecords</span><span class="p">(</span><span class="s2">&quot;EthercatMCdebug.template&quot;</span><span class="p">,</span> <span class="s2">&quot;PREFIX=$(PREFIX), MOTOR_NAME=$(MOTOR_NAME), MOTOR_PORT=$(MOTOR_PORT), AXIS_NO=$(AXIS_NO), PREC=3&quot;</span><span class="p">)</span>
+<span class="n">dbLoadRecords</span><span class="p">(</span><span class="s2">&quot;EthercatMC.template&quot;</span><span class="p">,</span> <span class="s2">&quot;PREFIX=$(MOTOR_PREFIX), MOTOR_NAME=$(MOTOR_NAME), R=$(MOTOR_NAME)-, MOTOR_PORT=$(MOTOR_PORT), ASYN_PORT=$(ASYN_PORT), AXIS_NO=$(AXIS_NO), DESC=$(DESC), PREC=$(PREC) $(ECAXISFIELDINIT)&quot;</span><span class="p">)</span>
+<span class="n">dbLoadRecords</span><span class="p">(</span><span class="s2">&quot;EthercatMCreadback.template&quot;</span><span class="p">,</span> <span class="s2">&quot;PREFIX=$(MOTOR_PREFIX), MOTOR_NAME=$(MOTOR_NAME), R=$(MOTOR_NAME)-, MOTOR_PORT=$(MOTOR_PORT), ASYN_PORT=$(ASYN_PORT), AXIS_NO=$(AXIS_NO), DESC=$(DESC), PREC=$(PREC) &quot;</span><span class="p">)</span>
+<span class="n">dbLoadRecords</span><span class="p">(</span><span class="s2">&quot;EthercatMCdebug.template&quot;</span><span class="p">,</span> <span class="s2">&quot;PREFIX=$(MOTOR_PREFIX), MOTOR_NAME=$(MOTOR_NAME), MOTOR_PORT=$(MOTOR_PORT), AXIS_NO=$(AXIS_NO), PREC=3&quot;</span><span class="p">)</span>
+
+<span class="p">{</span><span class="o">%</span> <span class="n">endfor</span> <span class="o">%</span><span class="p">}</span>
+<span class="p">{</span><span class="o">%</span> <span class="k">for</span> <span class="n">db</span> <span class="ow">in</span> <span class="n">additional_db_files</span> <span class="o">%</span><span class="p">}</span>
+<span class="n">dbLoadRecords</span><span class="p">(</span><span class="s2">&quot;db/{{ db.file }}&quot;</span><span class="p">,</span> <span class="s2">&quot;{{ db.macros }}&quot;</span><span class="p">)</span>
 
 <span class="p">{</span><span class="o">%</span> <span class="n">endfor</span> <span class="o">%</span><span class="p">}</span>
 <span class="n">cd</span> <span class="s2">&quot;$(TOP)&quot;</span>

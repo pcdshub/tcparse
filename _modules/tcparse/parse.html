@@ -765,7 +765,12 @@
         <span class="n">ams_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ams_id</span>
         <span class="k">if</span> <span class="n">ams_id</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.1.1&#39;</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">ams_id</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">ams_id</span>  <span class="c1"># :(</span></div>
+        <span class="k">return</span> <span class="n">ams_id</span>  <span class="c1"># :(</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">nested_projects</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s1">&#39;The nested projects (virtual PLC project) contained in this Project&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">TcSmItem_CNestedPlcProjDef</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="TcSmItem"><a class="viewcode-back" href="../../api.html#tcparse.parse.TcSmItem">[docs]</a><span class="nd">@_register_type</span>
