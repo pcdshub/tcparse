@@ -509,7 +509,8 @@ class NC(TwincatItem):
     _load_path = '_Config/NC'
 
     def post_init(self):
-        self.axes = [item.Axis[0] for item in self.TcSmItem]
+        self.axes = [item.Axis[0] for item in getattr(self, 'TcSmItem', [])]
+
         self.axis_by_id = {
             int(axis.attributes['Id']): axis
             for axis in self.axes
