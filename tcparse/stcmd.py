@@ -27,11 +27,12 @@ from .parse import load_project, Symbol_FB_DriveVirtual, Property
 description = __doc__
 
 
-def build_arg_parser():
-    parser = argparse.ArgumentParser(
-        description=description,
-        formatter_class=argparse.RawTextHelpFormatter
-    )
+def build_arg_parser(parser=None):
+    if parser is None:
+        parser = argparse.ArgumentParser(
+            description=description,
+            formatter_class=argparse.RawTextHelpFormatter
+        )
 
     parser.add_argument(
         'tsproj_project', type=str,

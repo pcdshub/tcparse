@@ -49,9 +49,11 @@ setup(
     description='TwinCAT XAE Project (tsproj / plcproj / XTI / TMC) Parser',
     long_description=readme,
     url='https://github.com/pcdshub/tcparse',
-    entry_points = {
+    entry_points={
         'console_scripts': [
             'tcparse-stcmd = tcparse.stcmd:main',
+            'tcparse-summary = tcparse.summary:main',
+            'tcparse = tcparse.__main__:main',
         ]
     },
     include_package_data=True,
