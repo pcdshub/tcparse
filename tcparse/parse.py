@@ -275,9 +275,10 @@ class _TwincatProjectSubItem(TwincatItem):
     [XTI, TMC, ...] A base class for items that appear in virtual PLC projects
     '''
     @property
-    def nested_project(self):
+    def project(self):
         'The nested project (virtual PLC project) associated with the item'
-        return self.find_ancestor(TcSmItem_CNestedPlcProjDef)
+        ancestor = self.find_ancestor(TcSmItem_CNestedPlcProjDef)
+        return ancestor if ancestor else self.find_ancestor(Plc)
 
 
 @_register_type
@@ -372,7 +373,7 @@ class Symbol_FB_DriveVirtual(Symbol):
     @property
     def pou(self):
         'The POU program associated with the Symbol'
-        return self.nested_project.pou_by_name[self.program_name]
+        return self.project.pou_by_name[self.program_name]
 
     @property
     def call_block(self):
@@ -414,7 +415,7 @@ class Symbol_FB_DriveVirtual(Symbol):
 
         links = [
             link
-            for link in self.nested_project.find(Link)
+            for link in self.project.find(Link)
             if '^' + linked_to_full.lower() in link.attributes['VarA'].lower()
             and 'NcToPlc' in link.attributes['VarA']
         ]
@@ -458,7 +459,7 @@ class POU(_TwincatProjectSubItem):
     def get_fully_qualified_name(self, name):
         if '.' in name:
             first, rest = name.split('.', 1)
-            if (first == self.name or first in self.nested_project.namespaces):
+            if (first == self.name or first in self.project.namespaces):
                 return name
 
         return f'{self.name}.{name}'
@@ -617,9 +618,10 @@ class Project(TwincatItem):
         return ams_id  # :(
 
     @property
-    def nested_projects(self):
+    def plcs(self):
         'The nested projects (virtual PLC project) contained in this Project'
-        return self.find(TcSmItem_CNestedPlcProjDef)
+        return [plc for plc in self.find(Plc)
+                if plc.project is not None]
 
 
 @_register_type
@@ -651,21 +653,30 @@ class Box(TwincatItem):
 
 
 @_register_type
-class TcSmItem_CNestedPlcProjDef(TcSmItem):
+class Plc(TwincatItem):
     '''
-    [XTI] Nested PLC project definition (i.e., a virtual PLC project)
+    [XTI] A Plc Project
 
     Contains POUs and a parsed version of the tmc
     '''
     def post_init(self):
-        proj = self.Project[0]
-        project_path = self.get_relative_path(proj.attributes['PrjFilePath'])
-        tmc_path = self.get_relative_path(proj.attributes['TmcFilePath'])
-        self.project = (parse(project_path, parent=self)
-                        if project_path.exists()
+        if hasattr(self, 'Project'):
+            proj = self.Project[0]
+        else:
+            self.project = None
+            self.tmc = None
+            # Some <Plc>s are merely containers for nested project
+            # definitions in separate XTI files. Ignore those for now, as
+            # they will be loaded later.
+            return
+
+        self.project_path = self.get_relative_path(proj.attributes['PrjFilePath'])
+        self.tmc_path = self.get_relative_path(proj.attributes['TmcFilePath'])
+        self.project = (parse(self.project_path, parent=self)
+                        if self.project_path.exists()
                         else None)
-        self.tmc = (parse(tmc_path, parent=self)
-                    if tmc_path.exists()
+        self.tmc = (parse(self.tmc_path, parent=self)
+                    if self.tmc_path.exists()
                     else None)
 
         self.source_filenames = [
@@ -704,6 +715,17 @@ class TcSmItem_CNestedPlcProjDef(TcSmItem):
 
         if self.tmc is not None:
             yield from self.tmc.find(cls)
+
+
+@_register_type
+class TcSmItem_CNestedPlcProjDef(TcSmItem, Plc):
+    '''
+    [XTI] Nested PLC project definition (i.e., a virtual PLC project)
+
+    Contains POUs and a parsed version of the tmc
+    '''
+    ...
+
 
 
 @_register_type

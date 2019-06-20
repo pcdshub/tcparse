@@ -196,7 +196,7 @@ def render(args):
             logger.error('pytmc unavailable; cannot use --all-records.')
             sys.exit(1)
 
-        for proj in project.nested_projects:
+        for proj in project.plcs:
             rendered_db = render_pytmc(proj.tmc.filename, dbd=args.dbd)
             if not rendered_db:
                 logger.info('No additional records from pytmc found in %s',

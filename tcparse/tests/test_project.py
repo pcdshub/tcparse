@@ -17,7 +17,7 @@ def test_summarize(project):
 
     for inst in project.find(tcparse.Symbol):
         pprint.pprint(inst.info)
-        inst.nested_project
+        inst.project
 
 
 def test_module_ads_port(project):
