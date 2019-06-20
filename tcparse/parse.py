@@ -604,7 +604,7 @@ class Project(TwincatItem):
         '''
         The AMS ID of the configured target
         '''
-        return self.attributes['TargetNetId']
+        return self.attributes.get('TargetNetId', '')
 
     @property
     def target_ip(self):
