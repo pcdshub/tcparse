@@ -615,6 +615,11 @@ class Project(TwincatItem):
             return ams_id[:-4]
         return ams_id  # :(
 
+    @property
+    def nested_projects(self):
+        'The nested projects (virtual PLC project) contained in this Project'
+        return self.find(TcSmItem_CNestedPlcProjDef)
+
 
 @_register_type
 class TcSmItem(TwincatItem):
