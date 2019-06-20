@@ -506,7 +506,7 @@ class NC(TwincatItem):
     '''
     [XTI] Top-level NC
     '''
-    _load_path = '_Config/NC'
+    _load_path = pathlib.Path('_Config') / 'NC'
 
     def post_init(self):
         self.axes = [item.Axis[0] for item in getattr(self, 'TcSmItem', [])]
@@ -527,7 +527,7 @@ class Axis(TwincatItem):
     '''
     [XTI] A single NC axis
     '''
-    _load_path = '_Config/NC/Axes'
+    _load_path = pathlib.Path('_Config') / 'NC' / 'Axes'
 
     @property
     def axis_number(self):
@@ -597,7 +597,7 @@ class Project(TwincatItem):
     '''
     [tsproj] A top-level project
     '''
-    _load_path = '_Config/PLC'
+    _load_path = pathlib.Path('_Config') / 'PLC'
 
     @property
     def ams_id(self):
@@ -639,7 +639,7 @@ class Device(TwincatItem):
     '''
     [XTI] Top-level IO device container
     '''
-    _load_path = '_Config/IO'
+    _load_path = pathlib.Path('_Config') / 'IO'
 
 
 @_register_type
