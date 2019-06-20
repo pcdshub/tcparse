@@ -505,12 +505,16 @@ class AxisPara(TwincatItem):
 @_register_type
 class NC(TwincatItem):
     '''
-    [XTI] Top-level NC
+    [tsproj or XTI] Top-level NC
     '''
     _load_path = pathlib.Path('_Config') / 'NC'
 
     def post_init(self):
-        self.axes = [item.Axis[0] for item in getattr(self, 'TcSmItem', [])]
+        # Axes can be stored directly in the tsproj:
+        self.axes = getattr(self, 'Axis', [])
+        if not self.axes:
+            # Or they can be stored in a separate file, 'NC.xti':
+            self.axes = [item.Axis[0] for item in getattr(self, 'TcSmItem', [])]
 
         self.axis_by_id = {
             int(axis.attributes['Id']): axis
@@ -656,8 +660,6 @@ class Box(TwincatItem):
 class Plc(TwincatItem):
     '''
     [XTI] A Plc Project
-
-    Contains POUs and a parsed version of the tmc
     '''
     def post_init(self):
         if hasattr(self, 'Project'):
