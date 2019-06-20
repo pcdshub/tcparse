@@ -54,8 +54,8 @@ def build_arg_parser():
     )
 
     parser.add_argument(
-        '--only-motors', default=False, action='store_true',
-        help='Do not parse TMC file for non-motor records'
+        '--all-records', default=False, action='store_true',
+        help='Parse the TMC file for non-motor records as well'
     )
 
     parser.add_argument(
@@ -190,11 +190,11 @@ def render(args):
     ads_port = motors[0][0].module.ads_port if motors else 851
 
     additional_db_files = []
-    if not args.only_motors:
+    if args.all_records:
         if pytmc is None:
-            logger.error('pytmc unavailable; '
-                         'did you mean to use --only-motors?')
+            logger.error('pytmc unavailable; cannot use --all-records.')
             sys.exit(1)
+
         for proj in project.nested_projects:
             rendered_db = render_pytmc(proj.tmc.filename, dbd=args.dbd)
             if not rendered_db:
