@@ -1,3 +1,4 @@
+import pytest
 import tcparse
 import pprint
 
@@ -17,7 +18,7 @@ def test_summarize(project):
 
     for inst in project.find(tcparse.Symbol):
         pprint.pprint(inst.info)
-        inst.nested_project
+        inst.project
 
 
 def test_module_ads_port(project):
@@ -25,13 +26,14 @@ def test_module_ads_port(project):
         assert inst.ads_port == 851  # probably!
 
 
+@pytest.mark.xfail(reason='TODO / project')
 def test_smoke_ams_id(project):
     print(project.ams_id)
     print(project.target_ip)
 
 
-def test_fb_drivevirtual_linking(project):
-    for inst in project.find(tcparse.Symbol_FB_DriveVirtual):
+def test_fb_motionstage_linking(project):
+    for inst in project.find(tcparse.Symbol_FB_MotionStage):
         pprint.pprint(inst)
         print('Program name', inst.program_name)
         print('Motor name', inst.motor_name)

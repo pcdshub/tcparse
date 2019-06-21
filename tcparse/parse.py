@@ -118,7 +118,7 @@ class TwincatItem:
 
     @property
     def root(self):
-        'The top-level TwincatItem'
+        'The top-level TwincatItem (likely TcSmProject)'
         parent = self
         while parent.parent is not None:
             parent = parent.parent
@@ -275,9 +275,11 @@ class _TwincatProjectSubItem(TwincatItem):
     [XTI, TMC, ...] A base class for items that appear in virtual PLC projects
     '''
     @property
-    def nested_project(self):
+    def project(self):
         'The nested project (virtual PLC project) associated with the item'
-        return self.find_ancestor(TcSmItem_CNestedPlcProjDef)
+        # TODO this is wrong... can't consistently find Mappings...
+        ancestor = self.find_ancestor(TcSmItem_CNestedPlcProjDef)
+        return ancestor if ancestor else self.find_ancestor(Plc)
 
 
 @_register_type
@@ -318,9 +320,27 @@ class Property(TwincatItem):
 
 
 @_register_type
+class OwnerA(TwincatItem):
+    '''
+    [XTC] For a Link between VarA and VarB, this is the parent of VarA
+    '''
+    ...
+
+
+@_register_type
+class OwnerB(TwincatItem):
+    '''
+    [XTC] For a Link between VarA and VarB, this is the parent of VarB
+    '''
+    ...
+
+
+@_register_type
 class Link(TwincatItem):
     '[XTI] Links between NC/PLC/IO'
-    ...
+    def post_init(self):
+        self.a = (self.find_ancestor(OwnerA).name, self.attributes.get('VarA'))
+        self.b = (self.find_ancestor(OwnerB).name, self.attributes.get('VarB'))
 
 
 @_register_type
@@ -329,8 +349,8 @@ class Symbol(_TwincatProjectSubItem):
     [TMC] A basic Symbol type
 
     This is dynamically subclassed into new classes for ease of implementation
-    and searching.  For example, a function block defined as `FB_DriveVirtual`
-    will become `Symbol_FB_DriveVirtual`.
+    and searching.  For example, a function block defined as `FB_MotionStage`
+    will become `Symbol_FB_MotionStage`.
     '''
     @property
     def module(self):
@@ -348,9 +368,9 @@ class Symbol(_TwincatProjectSubItem):
 
 
 @_register_type
-class Symbol_FB_DriveVirtual(Symbol):
+class Symbol_FB_MotionStage(Symbol):
     '''
-    [TMC] A customized Symbol, representing only FB_DriveVirtual
+    [TMC] A customized Symbol, representing only FB_MotionStage
     '''
     def _repr_info(self):
         '__repr__ information'
@@ -372,7 +392,11 @@ class Symbol_FB_DriveVirtual(Symbol):
     @property
     def pou(self):
         'The POU program associated with the Symbol'
-        return self.nested_project.pou_by_name[self.program_name]
+        # TODO: hack
+        for pou in self.root.find(POU):
+            if pou.name == self.program_name:
+                return pou
+        # return self.project.pou_by_name[self.program_name]
 
     @property
     def call_block(self):
@@ -396,11 +420,11 @@ class Symbol_FB_DriveVirtual(Symbol):
         Returns
         -------
         linked_to : str
-            e.g., M1Link
+            e.g., M1
         linked_to_full : str
-            e.g., Main.M1Link
+            e.g., Main.M1
         '''
-        linked_to = self.call_block['Axis']
+        linked_to = self.call_block['stMotionStage']
         return linked_to, self.pou.get_fully_qualified_name(linked_to)
 
     @property
@@ -408,23 +432,27 @@ class Symbol_FB_DriveVirtual(Symbol):
         '''
         The Link for NcToPlc
 
-        That is, how the NC axis is connected to the FB_DriveVirtual
+        That is, how the NC axis is connected to the FB_MotionStage
         '''
         _, linked_to_full = self.linked_to
 
         links = [
             link
-            for link in self.nested_project.find(Link)
-            if '^' + linked_to_full.lower() in link.attributes['VarA'].lower()
+            for link in self.project.find(Link)
+            if f'^{linked_to_full.lower()}' in link.attributes['VarA'].lower()
             and 'NcToPlc' in link.attributes['VarA']
         ]
+
+        if not links:
+            raise RuntimeError(f'No NC link to FB_MotionStage found for '
+                               f'{self.name!r} (^{linked_to_full})')
 
         link, = links
         return link
 
     @property
     def nc_axis(self):
-        'The NC `Axis` associated with the FB_DriveVirtual'
+        'The NC `Axis` associated with the FB_MotionStage'
         link = self.nc_to_plc_link
         parent_name = link.parent.name.split('^')
         if parent_name[0] == 'TINC':
@@ -435,7 +463,7 @@ class Symbol_FB_DriveVirtual(Symbol):
         nc, = list(nc for nc in self.root.find(NC)
                    if nc.SafTask[0].name == task_name)
         nc_axis = nc.axis_by_name[axis_name]
-        # link nc_axis and FB_DriveVirtual?
+        # link nc_axis and FB_MotionStage?
         return nc_axis
 
 
@@ -458,7 +486,7 @@ class POU(_TwincatProjectSubItem):
     def get_fully_qualified_name(self, name):
         if '.' in name:
             first, rest = name.split('.', 1)
-            if (first == self.name or first in self.nested_project.namespaces):
+            if (first == self.name or first in self.project.namespaces):
                 return name
 
         return f'{self.name}.{name}'
@@ -504,12 +532,17 @@ class AxisPara(TwincatItem):
 @_register_type
 class NC(TwincatItem):
     '''
-    [XTI] Top-level NC
+    [tsproj or XTI] Top-level NC
     '''
-    _load_path = '_Config/NC'
+    _load_path = pathlib.Path('_Config') / 'NC'
 
     def post_init(self):
-        self.axes = [item.Axis[0] for item in self.TcSmItem]
+        # Axes can be stored directly in the tsproj:
+        self.axes = getattr(self, 'Axis', [])
+        if not self.axes:
+            # Or they can be stored in a separate file, 'NC.xti':
+            self.axes = [item.Axis[0] for item in getattr(self, 'TcSmItem', [])]
+
         self.axis_by_id = {
             int(axis.attributes['Id']): axis
             for axis in self.axes
@@ -526,7 +559,7 @@ class Axis(TwincatItem):
     '''
     [XTI] A single NC axis
     '''
-    _load_path = '_Config/NC/Axes'
+    _load_path = pathlib.Path('_Config') / 'NC' / 'Axes'
 
     @property
     def axis_number(self):
@@ -594,16 +627,16 @@ class Encoder(TwincatItem):
 @_register_type
 class Project(TwincatItem):
     '''
-    [tsproj] A top-level project
+    [tsproj] A project which contains Plc, Io, Mappings, etc.
     '''
-    _load_path = '_Config/PLC'
+    _load_path = pathlib.Path('_Config') / 'PLC'
 
     @property
     def ams_id(self):
         '''
         The AMS ID of the configured target
         '''
-        return self.attributes['TargetNetId']
+        return self.attributes.get('TargetNetId', '')
 
     @property
     def target_ip(self):
@@ -615,10 +648,17 @@ class Project(TwincatItem):
             return ams_id[:-4]
         return ams_id  # :(
 
+
+@_register_type
+class TcSmProject(TwincatItem):
+    '''
+    [tsproj] A top-level TwinCAT tsproj
+    '''
     @property
-    def nested_projects(self):
+    def plcs(self):
         'The nested projects (virtual PLC project) contained in this Project'
-        return self.find(TcSmItem_CNestedPlcProjDef)
+        return [plc for plc in self.find(Plc)
+                if plc.project is not None]
 
 
 @_register_type
@@ -638,7 +678,7 @@ class Device(TwincatItem):
     '''
     [XTI] Top-level IO device container
     '''
-    _load_path = '_Config/IO'
+    _load_path = pathlib.Path('_Config') / 'IO'
 
 
 @_register_type
@@ -650,21 +690,29 @@ class Box(TwincatItem):
 
 
 @_register_type
-class TcSmItem_CNestedPlcProjDef(TcSmItem):
+class Plc(TwincatItem):
     '''
-    [XTI] Nested PLC project definition (i.e., a virtual PLC project)
-
-    Contains POUs and a parsed version of the tmc
+    [XTI] A Plc Project
     '''
     def post_init(self):
-        proj = self.Project[0]
-        project_path = self.get_relative_path(proj.attributes['PrjFilePath'])
-        tmc_path = self.get_relative_path(proj.attributes['TmcFilePath'])
-        self.project = (parse(project_path, parent=self)
-                        if project_path.exists()
+        self.namespaces = {}
+        if hasattr(self, 'Project'):
+            proj = self.Project[0]
+        else:
+            self.project = None
+            self.tmc = None
+            # Some <Plc>s are merely containers for nested project
+            # definitions in separate XTI files. Ignore those for now, as
+            # they will be loaded later.
+            return
+
+        self.project_path = self.get_relative_path(proj.attributes['PrjFilePath'])
+        self.tmc_path = self.get_relative_path(proj.attributes['TmcFilePath'])
+        self.project = (parse(self.project_path, parent=self)
+                        if self.project_path.exists()
                         else None)
-        self.tmc = (parse(tmc_path, parent=self)
-                    if tmc_path.exists()
+        self.tmc = (parse(self.tmc_path, parent=self)
+                    if self.tmc_path.exists()
                     else None)
 
         self.source_filenames = [
@@ -693,7 +741,7 @@ class TcSmItem_CNestedPlcProjDef(TcSmItem):
             and plc_obj.GVL[0].name
         }
 
-        self.namespaces = dict(self.pou_by_name)
+        self.namespaces.update(self.pou_by_name)
         self.namespaces.update(self.gvl_by_name)
 
     def find(self, cls):
@@ -701,8 +749,23 @@ class TcSmItem_CNestedPlcProjDef(TcSmItem):
         if self.project is not None:
             yield from self.project.find(cls)
 
+        for key, ns in self.namespaces.items():
+            if isinstance(ns, cls):
+                yield ns
+
         if self.tmc is not None:
             yield from self.tmc.find(cls)
+
+
+@_register_type
+class TcSmItem_CNestedPlcProjDef(TcSmItem, Plc):
+    '''
+    [XTI] Nested PLC project definition (i.e., a virtual PLC project)
+
+    Contains POUs and a parsed version of the tmc
+    '''
+    ...
+
 
 
 @_register_type
@@ -895,10 +958,7 @@ def load_project(fn):
     if fn.suffix.lower() != '.tsproj':
         raise ValueError('Expected a .tsproj file')
 
-    project = parse(fn)
-    project = project.Project[0]
-    project.parent = None
-    return project
+    return parse(fn)
 
 
 def case_insensitive_path(path):

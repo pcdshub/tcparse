@@ -2,7 +2,7 @@
 "tcparse-stcmd" is a command line utility for generating ESS/ethercatmc-capable
 EPICS startup st.cmd files directly from TwinCAT3 .tsproj projects.
 
-Relies on the existence (and linking) of FB_DriveVirtual function blocks.
+Relies on the existence (and linking) of FB_MotionStage function blocks.
 """
 
 import argparse
@@ -21,17 +21,18 @@ else:
     from pytmc.xml_obj import Configuration as PytmcConfiguration
     from pytmc.bin.pytmc import process as pytmc_process, LinterError
 
-from .parse import load_project, Symbol_FB_DriveVirtual, Property
+from .parse import load_project, Symbol_FB_MotionStage, Property, Project
 
 
 description = __doc__
 
 
-def build_arg_parser():
-    parser = argparse.ArgumentParser(
-        description=description,
-        formatter_class=argparse.RawTextHelpFormatter
-    )
+def build_arg_parser(parser=None):
+    if parser is None:
+        parser = argparse.ArgumentParser(
+            description=description,
+            formatter_class=argparse.RawTextHelpFormatter
+        )
 
     parser.add_argument(
         'tsproj_project', type=str,
@@ -129,7 +130,7 @@ def render(args):
 
     project = load_project(args.tsproj_project)
     motors = [(motor, motor.nc_axis)
-              for motor in project.find(Symbol_FB_DriveVirtual)]
+              for motor in project.find(Symbol_FB_MotionStage)]
 
     def get_pytmc(motor, nc_axis, key):
         '''
@@ -190,23 +191,29 @@ def render(args):
     ads_port = motors[0][0].module.ads_port if motors else 851
 
     additional_db_files = []
+    try:
+        plc, = project.plcs
+    except TypeError:
+        raise RuntimeError('Only single PLC projects supported currently')
+
     if args.all_records:
         if pytmc is None:
             logger.error('pytmc unavailable; cannot use --all-records.')
             sys.exit(1)
 
-        for proj in project.nested_projects:
-            rendered_db = render_pytmc(proj.tmc.filename, dbd=args.dbd)
-            if not rendered_db:
-                logger.info('No additional records from pytmc found in %s',
-                            proj.tmc.filename)
-                continue
-
-            db_filename = f'{proj.filename.stem}.db'
+        rendered_db = render_pytmc(plc.tmc.filename, dbd=args.dbd)
+        if not rendered_db:
+            logger.info('No additional records from pytmc found in %s',
+                        plc.tmc.filename)
+        else:
+            db_filename = f'{plc.filename.stem}.db'
             db_path = pathlib.Path(args.db_path) / db_filename
             with open(db_path, 'wt') as db_file:
                 db_file.write(rendered_db)
             additional_db_files.append({'file': db_filename, 'macros': ''})
+
+    # TODO one last hack
+    ams_proj = plc.find_ancestor(Project)
 
     template_args = dict(
         binary_name=args.binary,
@@ -217,8 +224,8 @@ def render(args):
 
         motor_port='PLC_ADS',
         asyn_port='ASYN_PLC',
-        plc_ams_id=project.ams_id,
-        plc_ip=project.target_ip,
+        plc_ams_id=ams_proj.ams_id,
+        plc_ip=ams_proj.target_ip,
         plc_ads_port=ads_port,
 
         motors=template_motors,
