@@ -227,6 +227,12 @@ and so on.</p>
 <em class="property">class </em><code class="sig-prename descclassname">tcparse.parse.</code><code class="sig-name descname">Link</code><span class="sig-paren">(</span><em class="sig-param">element</em>, <em class="sig-param">*</em>, <em class="sig-param">parent=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tcparse/parse.html#Link"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tcparse.parse.Link" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tcparse.parse.TwincatItem</span></code></p>
 <p>[XTI] Links between NC/PLC/IO</p>
+<dl class="method">
+<dt id="tcparse.parse.Link.post_init">
+<code class="sig-name descname">post_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tcparse/parse.html#Link.post_init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tcparse.parse.Link.post_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hook for subclasses; called after __init__</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -247,13 +253,27 @@ and so on.</p>
 <dt id="tcparse.parse.NC">
 <em class="property">class </em><code class="sig-prename descclassname">tcparse.parse.</code><code class="sig-name descname">NC</code><span class="sig-paren">(</span><em class="sig-param">element</em>, <em class="sig-param">*</em>, <em class="sig-param">parent=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tcparse/parse.html#NC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tcparse.parse.NC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tcparse.parse.TwincatItem</span></code></p>
-<p>[XTI] Top-level NC</p>
+<p>[tsproj or XTI] Top-level NC</p>
 <dl class="method">
 <dt id="tcparse.parse.NC.post_init">
 <code class="sig-name descname">post_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tcparse/parse.html#NC.post_init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tcparse.parse.NC.post_init" title="Permalink to this definition">¶</a></dt>
 <dd><p>Hook for subclasses; called after __init__</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="class">
+<dt id="tcparse.parse.OwnerA">
+<em class="property">class </em><code class="sig-prename descclassname">tcparse.parse.</code><code class="sig-name descname">OwnerA</code><span class="sig-paren">(</span><em class="sig-param">element</em>, <em class="sig-param">*</em>, <em class="sig-param">parent=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tcparse/parse.html#OwnerA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tcparse.parse.OwnerA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tcparse.parse.TwincatItem</span></code></p>
+<p>[XTC] For a Link between VarA and VarB, this is the parent of VarA</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="tcparse.parse.OwnerB">
+<em class="property">class </em><code class="sig-prename descclassname">tcparse.parse.</code><code class="sig-name descname">OwnerB</code><span class="sig-paren">(</span><em class="sig-param">element</em>, <em class="sig-param">*</em>, <em class="sig-param">parent=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tcparse/parse.html#OwnerB"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tcparse.parse.OwnerB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tcparse.parse.TwincatItem</span></code></p>
+<p>[XTC] For a Link between VarA and VarB, this is the parent of VarB</p>
 </dd></dl>
 
 <dl class="class">
@@ -294,20 +314,38 @@ and so on.</p>
 </dd></dl>
 
 <dl class="class">
+<dt id="tcparse.parse.Plc">
+<em class="property">class </em><code class="sig-prename descclassname">tcparse.parse.</code><code class="sig-name descname">Plc</code><span class="sig-paren">(</span><em class="sig-param">element</em>, <em class="sig-param">*</em>, <em class="sig-param">parent=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tcparse/parse.html#Plc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tcparse.parse.Plc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tcparse.parse.TwincatItem</span></code></p>
+<p>[XTI] A Plc Project</p>
+<dl class="method">
+<dt id="tcparse.parse.Plc.find">
+<code class="sig-name descname">find</code><span class="sig-paren">(</span><em class="sig-param">cls</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tcparse/parse.html#Plc.find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tcparse.parse.Plc.find" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find any descendents that are instances of cls</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cls</strong> (<em>TwincatItem</em>) – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tcparse.parse.Plc.post_init">
+<code class="sig-name descname">post_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tcparse/parse.html#Plc.post_init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tcparse.parse.Plc.post_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hook for subclasses; called after __init__</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="tcparse.parse.Project">
 <em class="property">class </em><code class="sig-prename descclassname">tcparse.parse.</code><code class="sig-name descname">Project</code><span class="sig-paren">(</span><em class="sig-param">element</em>, <em class="sig-param">*</em>, <em class="sig-param">parent=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tcparse/parse.html#Project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tcparse.parse.Project" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tcparse.parse.TwincatItem</span></code></p>
-<p>[tsproj] A top-level project</p>
+<p>[tsproj] A project which contains Plc, Io, Mappings, etc.</p>
 <dl class="method">
 <dt id="tcparse.parse.Project.ams_id">
 <em class="property">property </em><code class="sig-name descname">ams_id</code><a class="headerlink" href="#tcparse.parse.Project.ams_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>The AMS ID of the configured target</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="tcparse.parse.Project.nested_projects">
-<em class="property">property </em><code class="sig-name descname">nested_projects</code><a class="headerlink" href="#tcparse.parse.Project.nested_projects" title="Permalink to this definition">¶</a></dt>
-<dd><p>The nested projects (virtual PLC project) contained in this Project</p>
 </dd></dl>
 
 <dl class="method">
@@ -351,8 +389,8 @@ and so on.</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tcparse.parse._TwincatProjectSubItem</span></code></p>
 <p>[TMC] A basic Symbol type</p>
 <p>This is dynamically subclassed into new classes for ease of implementation
-and searching.  For example, a function block defined as <cite>FB_DriveVirtual</cite>
-will become <cite>Symbol_FB_DriveVirtual</cite>.</p>
+and searching.  For example, a function block defined as <cite>FB_MotionStage</cite>
+will become <cite>Symbol_FB_MotionStage</cite>.</p>
 <dl class="method">
 <dt id="tcparse.parse.Symbol.module">
 <em class="property">property </em><code class="sig-name descname">module</code><a class="headerlink" href="#tcparse.parse.Symbol.module" title="Permalink to this definition">¶</a></dt>
@@ -362,13 +400,13 @@ will become <cite>Symbol_FB_DriveVirtual</cite>.</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="tcparse.parse.Symbol_FB_DriveVirtual">
-<em class="property">class </em><code class="sig-prename descclassname">tcparse.parse.</code><code class="sig-name descname">Symbol_FB_DriveVirtual</code><span class="sig-paren">(</span><em class="sig-param">element</em>, <em class="sig-param">*</em>, <em class="sig-param">parent=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tcparse/parse.html#Symbol_FB_DriveVirtual"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tcparse.parse.Symbol_FB_DriveVirtual" title="Permalink to this definition">¶</a></dt>
+<dt id="tcparse.parse.Symbol_FB_MotionStage">
+<em class="property">class </em><code class="sig-prename descclassname">tcparse.parse.</code><code class="sig-name descname">Symbol_FB_MotionStage</code><span class="sig-paren">(</span><em class="sig-param">element</em>, <em class="sig-param">*</em>, <em class="sig-param">parent=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tcparse/parse.html#Symbol_FB_MotionStage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tcparse.parse.Symbol_FB_MotionStage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tcparse.parse.Symbol" title="tcparse.parse.Symbol"><code class="xref py py-class docutils literal notranslate"><span class="pre">tcparse.parse.Symbol</span></code></a></p>
-<p>[TMC] A customized Symbol, representing only FB_DriveVirtual</p>
+<p>[TMC] A customized Symbol, representing only FB_MotionStage</p>
 <dl class="method">
-<dt id="tcparse.parse.Symbol_FB_DriveVirtual.call_block">
-<em class="property">property </em><code class="sig-name descname">call_block</code><a class="headerlink" href="#tcparse.parse.Symbol_FB_DriveVirtual.call_block" title="Permalink to this definition">¶</a></dt>
+<dt id="tcparse.parse.Symbol_FB_MotionStage.call_block">
+<em class="property">property </em><code class="sig-name descname">call_block</code><a class="headerlink" href="#tcparse.parse.Symbol_FB_MotionStage.call_block" title="Permalink to this definition">¶</a></dt>
 <dd><p>A dictionary representation of the call</p>
 <dl class="simple">
 <dt>For example::</dt><dd><p>M1(a := 1, b := 2);</p>
@@ -379,15 +417,15 @@ will become <cite>Symbol_FB_DriveVirtual</cite>.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="tcparse.parse.Symbol_FB_DriveVirtual.linked_to">
-<em class="property">property </em><code class="sig-name descname">linked_to</code><a class="headerlink" href="#tcparse.parse.Symbol_FB_DriveVirtual.linked_to" title="Permalink to this definition">¶</a></dt>
+<dt id="tcparse.parse.Symbol_FB_MotionStage.linked_to">
+<em class="property">property </em><code class="sig-name descname">linked_to</code><a class="headerlink" href="#tcparse.parse.Symbol_FB_MotionStage.linked_to" title="Permalink to this definition">¶</a></dt>
 <dd><p>Where the axis is linked to, determined by the call block in the POU
 where the AXIS_REF is defined</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p><ul class="simple">
-<li><p><strong>linked_to</strong> (<em>str</em>) – e.g., M1Link</p></li>
-<li><p><strong>linked_to_full</strong> (<em>str</em>) – e.g., Main.M1Link</p></li>
+<li><p><strong>linked_to</strong> (<em>str</em>) – e.g., M1</p></li>
+<li><p><strong>linked_to_full</strong> (<em>str</em>) – e.g., Main.M1</p></li>
 </ul>
 </p>
 </dd>
@@ -395,33 +433,33 @@ where the AXIS_REF is defined</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="tcparse.parse.Symbol_FB_DriveVirtual.motor_name">
-<em class="property">property </em><code class="sig-name descname">motor_name</code><a class="headerlink" href="#tcparse.parse.Symbol_FB_DriveVirtual.motor_name" title="Permalink to this definition">¶</a></dt>
+<dt id="tcparse.parse.Symbol_FB_MotionStage.motor_name">
+<em class="property">property </em><code class="sig-name descname">motor_name</code><a class="headerlink" href="#tcparse.parse.Symbol_FB_MotionStage.motor_name" title="Permalink to this definition">¶</a></dt>
 <dd><p><cite>M1</cite> of <cite>Main.M1</cite></p>
 </dd></dl>
 
 <dl class="method">
-<dt id="tcparse.parse.Symbol_FB_DriveVirtual.nc_axis">
-<em class="property">property </em><code class="sig-name descname">nc_axis</code><a class="headerlink" href="#tcparse.parse.Symbol_FB_DriveVirtual.nc_axis" title="Permalink to this definition">¶</a></dt>
-<dd><p>The NC <cite>Axis</cite> associated with the FB_DriveVirtual</p>
+<dt id="tcparse.parse.Symbol_FB_MotionStage.nc_axis">
+<em class="property">property </em><code class="sig-name descname">nc_axis</code><a class="headerlink" href="#tcparse.parse.Symbol_FB_MotionStage.nc_axis" title="Permalink to this definition">¶</a></dt>
+<dd><p>The NC <cite>Axis</cite> associated with the FB_MotionStage</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="tcparse.parse.Symbol_FB_DriveVirtual.nc_to_plc_link">
-<em class="property">property </em><code class="sig-name descname">nc_to_plc_link</code><a class="headerlink" href="#tcparse.parse.Symbol_FB_DriveVirtual.nc_to_plc_link" title="Permalink to this definition">¶</a></dt>
+<dt id="tcparse.parse.Symbol_FB_MotionStage.nc_to_plc_link">
+<em class="property">property </em><code class="sig-name descname">nc_to_plc_link</code><a class="headerlink" href="#tcparse.parse.Symbol_FB_MotionStage.nc_to_plc_link" title="Permalink to this definition">¶</a></dt>
 <dd><p>The Link for NcToPlc</p>
-<p>That is, how the NC axis is connected to the FB_DriveVirtual</p>
+<p>That is, how the NC axis is connected to the FB_MotionStage</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="tcparse.parse.Symbol_FB_DriveVirtual.pou">
-<em class="property">property </em><code class="sig-name descname">pou</code><a class="headerlink" href="#tcparse.parse.Symbol_FB_DriveVirtual.pou" title="Permalink to this definition">¶</a></dt>
+<dt id="tcparse.parse.Symbol_FB_MotionStage.pou">
+<em class="property">property </em><code class="sig-name descname">pou</code><a class="headerlink" href="#tcparse.parse.Symbol_FB_MotionStage.pou" title="Permalink to this definition">¶</a></dt>
 <dd><p>The POU program associated with the Symbol</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="tcparse.parse.Symbol_FB_DriveVirtual.program_name">
-<em class="property">property </em><code class="sig-name descname">program_name</code><a class="headerlink" href="#tcparse.parse.Symbol_FB_DriveVirtual.program_name" title="Permalink to this definition">¶</a></dt>
+<dt id="tcparse.parse.Symbol_FB_MotionStage.program_name">
+<em class="property">property </em><code class="sig-name descname">program_name</code><a class="headerlink" href="#tcparse.parse.Symbol_FB_MotionStage.program_name" title="Permalink to this definition">¶</a></dt>
 <dd><p><cite>Main</cite> of <cite>Main.M1</cite></p>
 </dd></dl>
 
@@ -440,24 +478,20 @@ file.</p>
 <dl class="class">
 <dt id="tcparse.parse.TcSmItem_CNestedPlcProjDef">
 <em class="property">class </em><code class="sig-prename descclassname">tcparse.parse.</code><code class="sig-name descname">TcSmItem_CNestedPlcProjDef</code><span class="sig-paren">(</span><em class="sig-param">element</em>, <em class="sig-param">*</em>, <em class="sig-param">parent=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tcparse/parse.html#TcSmItem_CNestedPlcProjDef"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tcparse.parse.TcSmItem_CNestedPlcProjDef" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#tcparse.parse.TcSmItem" title="tcparse.parse.TcSmItem"><code class="xref py py-class docutils literal notranslate"><span class="pre">tcparse.parse.TcSmItem</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#tcparse.parse.TcSmItem" title="tcparse.parse.TcSmItem"><code class="xref py py-class docutils literal notranslate"><span class="pre">tcparse.parse.TcSmItem</span></code></a>, <a class="reference internal" href="#tcparse.parse.Plc" title="tcparse.parse.Plc"><code class="xref py py-class docutils literal notranslate"><span class="pre">tcparse.parse.Plc</span></code></a></p>
 <p>[XTI] Nested PLC project definition (i.e., a virtual PLC project)</p>
 <p>Contains POUs and a parsed version of the tmc</p>
-<dl class="method">
-<dt id="tcparse.parse.TcSmItem_CNestedPlcProjDef.find">
-<code class="sig-name descname">find</code><span class="sig-paren">(</span><em class="sig-param">cls</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tcparse/parse.html#TcSmItem_CNestedPlcProjDef.find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tcparse.parse.TcSmItem_CNestedPlcProjDef.find" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find any descendents that are instances of cls</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>cls</strong> (<em>TwincatItem</em>) – </p>
-</dd>
-</dl>
 </dd></dl>
 
+<dl class="class">
+<dt id="tcparse.parse.TcSmProject">
+<em class="property">class </em><code class="sig-prename descclassname">tcparse.parse.</code><code class="sig-name descname">TcSmProject</code><span class="sig-paren">(</span><em class="sig-param">element</em>, <em class="sig-param">*</em>, <em class="sig-param">parent=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">filename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tcparse/parse.html#TcSmProject"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tcparse.parse.TcSmProject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tcparse.parse.TwincatItem</span></code></p>
+<p>[tsproj] A top-level TwinCAT tsproj</p>
 <dl class="method">
-<dt id="tcparse.parse.TcSmItem_CNestedPlcProjDef.post_init">
-<code class="sig-name descname">post_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tcparse/parse.html#TcSmItem_CNestedPlcProjDef.post_init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tcparse.parse.TcSmItem_CNestedPlcProjDef.post_init" title="Permalink to this definition">¶</a></dt>
-<dd><p>Hook for subclasses; called after __init__</p>
+<dt id="tcparse.parse.TcSmProject.plcs">
+<em class="property">property </em><code class="sig-name descname">plcs</code><a class="headerlink" href="#tcparse.parse.TcSmProject.plcs" title="Permalink to this definition">¶</a></dt>
+<dd><p>The nested projects (virtual PLC project) contained in this Project</p>
 </dd></dl>
 
 </dd></dl>

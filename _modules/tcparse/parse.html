@@ -270,7 +270,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">root</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="s1">&#39;The top-level TwincatItem&#39;</span>
+        <span class="s1">&#39;The top-level TwincatItem (likely TcSmProject)&#39;</span>
         <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span>
         <span class="k">while</span> <span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">parent</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">parent</span>
@@ -427,9 +427,11 @@
 <span class="sd">    [XTI, TMC, ...] A base class for items that appear in virtual PLC projects</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">nested_project</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">project</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s1">&#39;The nested project (virtual PLC project) associated with the item&#39;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_ancestor</span><span class="p">(</span><span class="n">TcSmItem_CNestedPlcProjDef</span><span class="p">)</span>
+        <span class="c1"># TODO this is wrong... can&#39;t consistently find Mappings...</span>
+        <span class="n">ancestor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_ancestor</span><span class="p">(</span><span class="n">TcSmItem_CNestedPlcProjDef</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ancestor</span> <span class="k">if</span> <span class="n">ancestor</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_ancestor</span><span class="p">(</span><span class="n">Plc</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="Module"><a class="viewcode-back" href="../../api.html#tcparse.parse.Module">[docs]</a><span class="nd">@_register_type</span>
@@ -469,10 +471,28 @@
     <span class="o">...</span></div>
 
 
+<div class="viewcode-block" id="OwnerA"><a class="viewcode-back" href="../../api.html#tcparse.parse.OwnerA">[docs]</a><span class="nd">@_register_type</span>
+<span class="k">class</span> <span class="nc">OwnerA</span><span class="p">(</span><span class="n">TwincatItem</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    [XTC] For a Link between VarA and VarB, this is the parent of VarA</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="o">...</span></div>
+
+
+<div class="viewcode-block" id="OwnerB"><a class="viewcode-back" href="../../api.html#tcparse.parse.OwnerB">[docs]</a><span class="nd">@_register_type</span>
+<span class="k">class</span> <span class="nc">OwnerB</span><span class="p">(</span><span class="n">TwincatItem</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    [XTC] For a Link between VarA and VarB, this is the parent of VarB</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="o">...</span></div>
+
+
 <div class="viewcode-block" id="Link"><a class="viewcode-back" href="../../api.html#tcparse.parse.Link">[docs]</a><span class="nd">@_register_type</span>
 <span class="k">class</span> <span class="nc">Link</span><span class="p">(</span><span class="n">TwincatItem</span><span class="p">):</span>
     <span class="s1">&#39;[XTI] Links between NC/PLC/IO&#39;</span>
-    <span class="o">...</span></div>
+<div class="viewcode-block" id="Link.post_init"><a class="viewcode-back" href="../../api.html#tcparse.parse.Link.post_init">[docs]</a>    <span class="k">def</span> <span class="nf">post_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">find_ancestor</span><span class="p">(</span><span class="n">OwnerA</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;VarA&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">find_ancestor</span><span class="p">(</span><span class="n">OwnerB</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;VarB&#39;</span><span class="p">))</span></div></div>
 
 
 <div class="viewcode-block" id="Symbol"><a class="viewcode-back" href="../../api.html#tcparse.parse.Symbol">[docs]</a><span class="nd">@_register_type</span>
@@ -481,8 +501,8 @@
 <span class="sd">    [TMC] A basic Symbol type</span>
 
 <span class="sd">    This is dynamically subclassed into new classes for ease of implementation</span>
-<span class="sd">    and searching.  For example, a function block defined as `FB_DriveVirtual`</span>
-<span class="sd">    will become `Symbol_FB_DriveVirtual`.</span>
+<span class="sd">    and searching.  For example, a function block defined as `FB_MotionStage`</span>
+<span class="sd">    will become `Symbol_FB_MotionStage`.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">module</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -499,10 +519,10 @@
                     <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Symbol_FB_DriveVirtual"><a class="viewcode-back" href="../../api.html#tcparse.parse.Symbol_FB_DriveVirtual">[docs]</a><span class="nd">@_register_type</span>
-<span class="k">class</span> <span class="nc">Symbol_FB_DriveVirtual</span><span class="p">(</span><span class="n">Symbol</span><span class="p">):</span>
+<div class="viewcode-block" id="Symbol_FB_MotionStage"><a class="viewcode-back" href="../../api.html#tcparse.parse.Symbol_FB_MotionStage">[docs]</a><span class="nd">@_register_type</span>
+<span class="k">class</span> <span class="nc">Symbol_FB_MotionStage</span><span class="p">(</span><span class="n">Symbol</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    [TMC] A customized Symbol, representing only FB_DriveVirtual</span>
+<span class="sd">    [TMC] A customized Symbol, representing only FB_MotionStage</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="k">def</span> <span class="nf">_repr_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s1">&#39;__repr__ information&#39;</span>
@@ -524,7 +544,11 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">pou</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s1">&#39;The POU program associated with the Symbol&#39;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nested_project</span><span class="o">.</span><span class="n">pou_by_name</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">program_name</span><span class="p">]</span>
+        <span class="c1"># TODO: hack</span>
+        <span class="k">for</span> <span class="n">pou</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">POU</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">pou</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">program_name</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">pou</span>
+        <span class="c1"># return self.project.pou_by_name[self.program_name]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">call_block</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -548,11 +572,11 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        linked_to : str</span>
-<span class="sd">            e.g., M1Link</span>
+<span class="sd">            e.g., M1</span>
 <span class="sd">        linked_to_full : str</span>
-<span class="sd">            e.g., Main.M1Link</span>
+<span class="sd">            e.g., Main.M1</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="n">linked_to</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">call_block</span><span class="p">[</span><span class="s1">&#39;Axis&#39;</span><span class="p">]</span>
+        <span class="n">linked_to</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">call_block</span><span class="p">[</span><span class="s1">&#39;stMotionStage&#39;</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">linked_to</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pou</span><span class="o">.</span><span class="n">get_fully_qualified_name</span><span class="p">(</span><span class="n">linked_to</span><span class="p">)</span>
 
     <span class="nd">@property</span>
@@ -560,23 +584,27 @@
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        The Link for NcToPlc</span>
 
-<span class="sd">        That is, how the NC axis is connected to the FB_DriveVirtual</span>
+<span class="sd">        That is, how the NC axis is connected to the FB_MotionStage</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">linked_to_full</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linked_to</span>
 
         <span class="n">links</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">link</span>
-            <span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nested_project</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">Link</span><span class="p">)</span>
-            <span class="k">if</span> <span class="s1">&#39;^&#39;</span> <span class="o">+</span> <span class="n">linked_to_full</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">link</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;VarA&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">Link</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">f</span><span class="s1">&#39;^{linked_to_full.lower()}&#39;</span> <span class="ow">in</span> <span class="n">link</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;VarA&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
             <span class="ow">and</span> <span class="s1">&#39;NcToPlc&#39;</span> <span class="ow">in</span> <span class="n">link</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;VarA&#39;</span><span class="p">]</span>
         <span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">links</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;No NC link to FB_MotionStage found for &#39;</span>
+                               <span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.name!r}</span><span class="s1"> (^</span><span class="si">{linked_to_full}</span><span class="s1">)&#39;</span><span class="p">)</span>
 
         <span class="n">link</span><span class="p">,</span> <span class="o">=</span> <span class="n">links</span>
         <span class="k">return</span> <span class="n">link</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">nc_axis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="s1">&#39;The NC `Axis` associated with the FB_DriveVirtual&#39;</span>
+        <span class="s1">&#39;The NC `Axis` associated with the FB_MotionStage&#39;</span>
         <span class="n">link</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nc_to_plc_link</span>
         <span class="n">parent_name</span> <span class="o">=</span> <span class="n">link</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;^&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">parent_name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;TINC&#39;</span><span class="p">:</span>
@@ -587,7 +615,7 @@
         <span class="n">nc</span><span class="p">,</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">nc</span> <span class="k">for</span> <span class="n">nc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">NC</span><span class="p">)</span>
                    <span class="k">if</span> <span class="n">nc</span><span class="o">.</span><span class="n">SafTask</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">task_name</span><span class="p">)</span>
         <span class="n">nc_axis</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">axis_by_name</span><span class="p">[</span><span class="n">axis_name</span><span class="p">]</span>
-        <span class="c1"># link nc_axis and FB_DriveVirtual?</span>
+        <span class="c1"># link nc_axis and FB_MotionStage?</span>
         <span class="k">return</span> <span class="n">nc_axis</span></div>
 
 
@@ -610,7 +638,7 @@
     <span class="k">def</span> <span class="nf">get_fully_qualified_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="k">if</span> <span class="s1">&#39;.&#39;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
             <span class="n">first</span><span class="p">,</span> <span class="n">rest</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">first</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">or</span> <span class="n">first</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nested_project</span><span class="o">.</span><span class="n">namespaces</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">first</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">or</span> <span class="n">first</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">namespaces</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">name</span>
 
         <span class="k">return</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.name}</span><span class="s1">.</span><span class="si">{name}</span><span class="s1">&#39;</span>
@@ -656,12 +684,17 @@
 <div class="viewcode-block" id="NC"><a class="viewcode-back" href="../../api.html#tcparse.parse.NC">[docs]</a><span class="nd">@_register_type</span>
 <span class="k">class</span> <span class="nc">NC</span><span class="p">(</span><span class="n">TwincatItem</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    [XTI] Top-level NC</span>
+<span class="sd">    [tsproj or XTI] Top-level NC</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">_load_path</span> <span class="o">=</span> <span class="s1">&#39;_Config/NC&#39;</span>
+    <span class="n">_load_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="s1">&#39;_Config&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="s1">&#39;NC&#39;</span>
 
 <div class="viewcode-block" id="NC.post_init"><a class="viewcode-back" href="../../api.html#tcparse.parse.NC.post_init">[docs]</a>    <span class="k">def</span> <span class="nf">post_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">axes</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">Axis</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">TcSmItem</span><span class="p">]</span>
+        <span class="c1"># Axes can be stored directly in the tsproj:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axes</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;Axis&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
+            <span class="c1"># Or they can be stored in a separate file, &#39;NC.xti&#39;:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axes</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">Axis</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;TcSmItem&#39;</span><span class="p">,</span> <span class="p">[])]</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">axis_by_id</span> <span class="o">=</span> <span class="p">{</span>
             <span class="nb">int</span><span class="p">(</span><span class="n">axis</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;Id&#39;</span><span class="p">]):</span> <span class="n">axis</span>
             <span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span>
@@ -678,7 +711,7 @@
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    [XTI] A single NC axis</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">_load_path</span> <span class="o">=</span> <span class="s1">&#39;_Config/NC/Axes&#39;</span>
+    <span class="n">_load_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="s1">&#39;_Config&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="s1">&#39;NC&#39;</span> <span class="o">/</span> <span class="s1">&#39;Axes&#39;</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">axis_number</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -746,16 +779,16 @@
 <div class="viewcode-block" id="Project"><a class="viewcode-back" href="../../api.html#tcparse.parse.Project">[docs]</a><span class="nd">@_register_type</span>
 <span class="k">class</span> <span class="nc">Project</span><span class="p">(</span><span class="n">TwincatItem</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    [tsproj] A top-level project</span>
+<span class="sd">    [tsproj] A project which contains Plc, Io, Mappings, etc.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">_load_path</span> <span class="o">=</span> <span class="s1">&#39;_Config/PLC&#39;</span>
+    <span class="n">_load_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="s1">&#39;_Config&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="s1">&#39;PLC&#39;</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">ams_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        The AMS ID of the configured target</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;TargetNetId&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TargetNetId&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">target_ip</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -765,12 +798,19 @@
         <span class="n">ams_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ams_id</span>
         <span class="k">if</span> <span class="n">ams_id</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.1.1&#39;</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">ams_id</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">ams_id</span>  <span class="c1"># :(</span>
+        <span class="k">return</span> <span class="n">ams_id</span>  <span class="c1"># :(</span></div>
 
+
+<div class="viewcode-block" id="TcSmProject"><a class="viewcode-back" href="../../api.html#tcparse.parse.TcSmProject">[docs]</a><span class="nd">@_register_type</span>
+<span class="k">class</span> <span class="nc">TcSmProject</span><span class="p">(</span><span class="n">TwincatItem</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    [tsproj] A top-level TwinCAT tsproj</span>
+<span class="sd">    &#39;&#39;&#39;</span>
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">nested_projects</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">plcs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s1">&#39;The nested projects (virtual PLC project) contained in this Project&#39;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">TcSmItem_CNestedPlcProjDef</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="p">[</span><span class="n">plc</span> <span class="k">for</span> <span class="n">plc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">Plc</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">plc</span><span class="o">.</span><span class="n">project</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="TcSmItem"><a class="viewcode-back" href="../../api.html#tcparse.parse.TcSmItem">[docs]</a><span class="nd">@_register_type</span>
@@ -790,7 +830,7 @@
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    [XTI] Top-level IO device container</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">_load_path</span> <span class="o">=</span> <span class="s1">&#39;_Config/IO&#39;</span></div>
+    <span class="n">_load_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="s1">&#39;_Config&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="s1">&#39;IO&#39;</span></div>
 
 
 <div class="viewcode-block" id="Box"><a class="viewcode-back" href="../../api.html#tcparse.parse.Box">[docs]</a><span class="nd">@_register_type</span>
@@ -801,22 +841,30 @@
     <span class="n">_load_path</span> <span class="o">=</span> <span class="n">USE_FILE_AS_PATH</span></div>
 
 
-<div class="viewcode-block" id="TcSmItem_CNestedPlcProjDef"><a class="viewcode-back" href="../../api.html#tcparse.parse.TcSmItem_CNestedPlcProjDef">[docs]</a><span class="nd">@_register_type</span>
-<span class="k">class</span> <span class="nc">TcSmItem_CNestedPlcProjDef</span><span class="p">(</span><span class="n">TcSmItem</span><span class="p">):</span>
+<div class="viewcode-block" id="Plc"><a class="viewcode-back" href="../../api.html#tcparse.parse.Plc">[docs]</a><span class="nd">@_register_type</span>
+<span class="k">class</span> <span class="nc">Plc</span><span class="p">(</span><span class="n">TwincatItem</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    [XTI] Nested PLC project definition (i.e., a virtual PLC project)</span>
-
-<span class="sd">    Contains POUs and a parsed version of the tmc</span>
+<span class="sd">    [XTI] A Plc Project</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-<div class="viewcode-block" id="TcSmItem_CNestedPlcProjDef.post_init"><a class="viewcode-back" href="../../api.html#tcparse.parse.TcSmItem_CNestedPlcProjDef.post_init">[docs]</a>    <span class="k">def</span> <span class="nf">post_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">proj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Project</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">project_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_relative_path</span><span class="p">(</span><span class="n">proj</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;PrjFilePath&#39;</span><span class="p">])</span>
-        <span class="n">tmc_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_relative_path</span><span class="p">(</span><span class="n">proj</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;TmcFilePath&#39;</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="o">=</span> <span class="p">(</span><span class="n">parse</span><span class="p">(</span><span class="n">project_path</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="n">project_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+<div class="viewcode-block" id="Plc.post_init"><a class="viewcode-back" href="../../api.html#tcparse.parse.Plc.post_init">[docs]</a>    <span class="k">def</span> <span class="nf">post_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">namespaces</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;Project&#39;</span><span class="p">):</span>
+            <span class="n">proj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Project</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tmc</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="c1"># Some &lt;Plc&gt;s are merely containers for nested project</span>
+            <span class="c1"># definitions in separate XTI files. Ignore those for now, as</span>
+            <span class="c1"># they will be loaded later.</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">project_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_relative_path</span><span class="p">(</span><span class="n">proj</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;PrjFilePath&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tmc_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_relative_path</span><span class="p">(</span><span class="n">proj</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;TmcFilePath&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="o">=</span> <span class="p">(</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_path</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
                         <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tmc</span> <span class="o">=</span> <span class="p">(</span><span class="n">parse</span><span class="p">(</span><span class="n">tmc_path</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">tmc_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tmc</span> <span class="o">=</span> <span class="p">(</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmc_path</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmc_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
                     <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">source_filenames</span> <span class="o">=</span> <span class="p">[</span>
@@ -845,16 +893,31 @@
             <span class="ow">and</span> <span class="n">plc_obj</span><span class="o">.</span><span class="n">GVL</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
         <span class="p">}</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">namespaces</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pou_by_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">namespaces</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pou_by_name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">namespaces</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gvl_by_name</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="TcSmItem_CNestedPlcProjDef.find"><a class="viewcode-back" href="../../api.html#tcparse.parse.TcSmItem_CNestedPlcProjDef.find">[docs]</a>    <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
+<div class="viewcode-block" id="Plc.find"><a class="viewcode-back" href="../../api.html#tcparse.parse.Plc.find">[docs]</a>    <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
         <span class="k">yield from</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
 
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">ns</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">namespaces</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ns</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">ns</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmc</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TcSmItem_CNestedPlcProjDef"><a class="viewcode-back" href="../../api.html#tcparse.parse.TcSmItem_CNestedPlcProjDef">[docs]</a><span class="nd">@_register_type</span>
+<span class="k">class</span> <span class="nc">TcSmItem_CNestedPlcProjDef</span><span class="p">(</span><span class="n">TcSmItem</span><span class="p">,</span> <span class="n">Plc</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    [XTI] Nested PLC project definition (i.e., a virtual PLC project)</span>
+
+<span class="sd">    Contains POUs and a parsed version of the tmc</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="o">...</span></div>
+
 
 
 <div class="viewcode-block" id="Compile"><a class="viewcode-back" href="../../api.html#tcparse.parse.Compile">[docs]</a><span class="nd">@_register_type</span>
@@ -1047,10 +1110,7 @@
     <span class="k">if</span> <span class="n">fn</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">!=</span> <span class="s1">&#39;.tsproj&#39;</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Expected a .tsproj file&#39;</span><span class="p">)</span>
 
-    <span class="n">project</span> <span class="o">=</span> <span class="n">parse</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
-    <span class="n">project</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">Project</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">project</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">return</span> <span class="n">project</span></div>
+    <span class="k">return</span> <span class="n">parse</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="case_insensitive_path"><a class="viewcode-back" href="../../api.html#tcparse.parse.case_insensitive_path">[docs]</a><span class="k">def</span> <span class="nf">case_insensitive_path</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
