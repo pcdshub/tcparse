@@ -21,7 +21,7 @@ else:
     from pytmc.xml_obj import Configuration as PytmcConfiguration
     from pytmc.bin.pytmc import process as pytmc_process, LinterError
 
-from .parse import load_project, Symbol_FB_MotionStage, Property
+from .parse import load_project, Symbol_FB_MotionStage, Property, Project
 
 
 description = __doc__
@@ -212,6 +212,9 @@ def render(args):
                 db_file.write(rendered_db)
             additional_db_files.append({'file': db_filename, 'macros': ''})
 
+    # TODO one last hack
+    ams_proj = plc.find_ancestor(Project)
+
     template_args = dict(
         binary_name=args.binary,
         name=args.name,
@@ -221,8 +224,8 @@ def render(args):
 
         motor_port='PLC_ADS',
         asyn_port='ASYN_PLC',
-        plc_ams_id=plc.project.ams_id,
-        plc_ip=plc.project.target_ip,
+        plc_ams_id=ams_proj.ams_id,
+        plc_ip=ams_proj.target_ip,
         plc_ads_port=ads_port,
 
         motors=template_motors,
