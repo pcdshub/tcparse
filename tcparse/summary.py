@@ -124,7 +124,8 @@ def summary(args):
         print()
 
     if args.debug:
-        from tcparse import parse
+        # for interactive debugging ease-of-use, import `parse`
+        from tcparse import parse  # noqa
         try:
             from IPython import embed
         except ImportError:

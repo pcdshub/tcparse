@@ -541,7 +541,8 @@ class NC(TwincatItem):
         self.axes = getattr(self, 'Axis', [])
         if not self.axes:
             # Or they can be stored in a separate file, 'NC.xti':
-            self.axes = [item.Axis[0] for item in getattr(self, 'TcSmItem', [])]
+            self.axes = [item.Axis[0] for item in getattr(self, 'TcSmItem', [])
+                         ]
 
         self.axis_by_id = {
             int(axis.attributes['Id']): axis
@@ -706,8 +707,10 @@ class Plc(TwincatItem):
             # they will be loaded later.
             return
 
-        self.project_path = self.get_relative_path(proj.attributes['PrjFilePath'])
-        self.tmc_path = self.get_relative_path(proj.attributes['TmcFilePath'])
+        self.project_path = self.get_relative_path(
+            proj.attributes['PrjFilePath'])
+        self.tmc_path = self.get_relative_path(
+            proj.attributes['TmcFilePath'])
         self.project = (parse(self.project_path, parent=self)
                         if self.project_path.exists()
                         else None)
@@ -765,7 +768,6 @@ class TcSmItem_CNestedPlcProjDef(TcSmItem, Plc):
     Contains POUs and a parsed version of the tmc
     '''
     ...
-
 
 
 @_register_type
