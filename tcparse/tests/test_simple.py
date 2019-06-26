@@ -1,6 +1,52 @@
+import pytest
 from .conftest import TEST_ROOT
 
-from ..parse import get_pou_call_blocks, parse
+from ..parse import get_pou_call_blocks, variables_from_declaration, parse
+
+
+@pytest.mark.parametrize(
+    'decl, expected',
+    [
+        pytest.param(
+            '''
+               PROGRAM Main
+               VAR
+                  M1: FB_DriveVirtual;
+                  M1Link: FB_NcAxis;
+                  bLimitFwdM1 AT %I*: BOOL;
+                  bLimitBwdM1 AT %I*: BOOL;
+               END_VAR
+            ''',
+            {'M1':  {'spec': '', 'type': 'FB_DriveVirtual'},
+             'M1Link':  {'spec': '', 'type': 'FB_NcAxis'},
+             'bLimitFwdM1': {'spec': '%I*', 'type': 'BOOL'},
+             'bLimitBwdM1': {'spec': '%I*', 'type': 'BOOL'},
+             },
+            id='prog1'
+        ),
+        pytest.param(
+            '''
+               PROGRAM Main
+               VAR
+                  M1, M2: FB_DriveVirtual;
+                  M1Link: FB_NcAxis;
+                  bLimitFwdM1 AT %I*: BOOL;
+                  bLimitBwdM1, Foobar AT %I*: BOOL;
+               END_VAR
+            ''',
+            {'M1':  {'spec': '', 'type': 'FB_DriveVirtual'},
+             'M2':  {'spec': '', 'type': 'FB_DriveVirtual'},
+             'M1Link':  {'spec': '', 'type': 'FB_NcAxis'},
+             'bLimitFwdM1': {'spec': '%I*', 'type': 'BOOL'},
+             'bLimitBwdM1': {'spec': '%I*', 'type': 'BOOL'},
+             'Foobar': {'spec': '%I*', 'type': 'BOOL'},
+             },
+            id='prog1_with_commas'
+        ),
+     ]
+)
+def test_variables_from_declaration(decl, expected):
+    assert variables_from_declaration(decl) == expected
 
 
 def test_call_blocks():

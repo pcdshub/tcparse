@@ -869,21 +869,25 @@ def variables_from_declaration(declaration):
                 in_struct = False
             continue
 
-        name, dtype, *_ = line.split(':')
-        if ' ' in name:
-            name, specifier = name.split(' ', 1)
-            if specifier.lower().startswith('at '):
-                specifier = specifier[2:]
+        names, dtype, *_ = line.split(':')
+
+        try:
+            at_idx = names.lower().split(' ').index('at')
+        except ValueError:
+            specifiers = []
         else:
-            specifier = ''
+            words = names.split(' ')
+            specifiers = words[at_idx + 1:]
+            names = ' '.join(words[:at_idx])
 
         if dtype.lower() == 'struct':
             in_struct = True
 
-        variables[name] = {
-            'type': dtype.strip('; '),
-            'spec': specifier.strip(),
-        }
+        for name in names.split(','):
+            variables[name.strip()] = {
+                'type': dtype.strip('; '),
+                'spec': ' '.join(specifiers),
+            }
 
     return variables
 
