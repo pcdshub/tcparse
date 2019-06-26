@@ -87,12 +87,13 @@ from ..parse import get_pou_call_blocks, variables_from_declaration, parse
             '''
             PROGRAM Main
             VAR
-                TYPE STRUCT1
+                TYPE STRUCT1:
                 STRUCT
                     p1:int;
                     p2:int;
                     p3:dword;
                 END_STRUCT
+                END_TYPE
                 arr1 : ARRAY[1..3] OF STRUCT1:= [(p1:=1,p2:=10,p3:=4723), (p1:=2,p2:=0,p3:=299), (p1:=14,p2:=5,p3:=112)];
             END_VAR
             ''',
@@ -106,12 +107,13 @@ from ..parse import get_pou_call_blocks, variables_from_declaration, parse
             '''
             PROGRAM Main
             VAR
-                TYPE STRUCT1
+                TYPE STRUCT1 :
                 STRUCT
                     p1:int;
                     p2:int;
                     p3:dword;
                 END_STRUCT
+                END_TYPE
                 arr1 : ARRAY[1..3] OF STRUCT1:= [(p1:=1,p2:=10,p3:=4723),
                 (p1:=2,p2:=0,p3:=299),
                 (p1:=14,p2:=5,p3:=112)];

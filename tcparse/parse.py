@@ -865,23 +865,29 @@ def variables_from_declaration(declaration, *, start_marker='var'):
         {'var': {'type': 'TYPE', 'spec': '%I'}, ...}
     '''
     variables = {}
-    in_struct = False
+    in_type = False
     for line in lines_between(declaration, start_marker, 'end_var'):
         line = line.strip()
-        if in_struct:
-            if line.lower().startswith('end_struct'):
-                in_struct = False
+        if in_type:
+            if line.lower().startswith('end_type'):
+                in_type = False
             continue
 
-        if ':' not in line:
-            words = line.split(' ')
-            if words[0].lower() == 'type':
-                in_struct = True
+        words = line.split(' ')
+        if words[0].lower() == 'type':
+            # type <type_name> :
+            # struct
+            # ...
+            # end_struct
+            # end_type
+            in_type = True
             continue
 
+        # <names> : <dtype>
         names, dtype = line.split(':', 1)
 
         if ':=' in dtype:
+            # <names> : <dtype> := <value>
             dtype, value = dtype.split(':=', 1)
         else:
             value = None
@@ -891,12 +897,10 @@ def variables_from_declaration(declaration, *, start_marker='var'):
         except ValueError:
             specifiers = []
         else:
+            # <names> AT <specifiers> : <dtype> := <value>
             words = names.split(' ')
             specifiers = words[at_idx + 1:]
             names = ' '.join(words[:at_idx])
-
-        if dtype.lower() == 'struct':
-            in_struct = True
 
         var_metadata = {
             'type': dtype.strip('; '),
