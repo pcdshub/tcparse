@@ -845,7 +845,7 @@ def lines_between(text, start_marker, end_marker, *, include_blank=False):
             yield line
 
 
-def variables_from_declaration(declaration):
+def variables_from_declaration(declaration, *, start_marker='var'):
     '''
     Find all variable declarations given a declaration text block
 
@@ -853,23 +853,30 @@ def variables_from_declaration(declaration):
     ----------
     declaration : str
         The declaration code
+    start_marker : str, optional
+        The default works with POUs, which have a variable block in
+        VAR/END_VAR.  Can be adjusted for GVL 'var_global' as well.
 
     Returns
     -------
     variables : dict
         {'var': {'type': 'TYPE', 'spec': '%I'}, ...}
     '''
-    # TODO: this has not been tested well at all
     variables = {}
     in_struct = False
-    for line in lines_between(declaration, 'var', 'end_var'):
+    for line in lines_between(declaration, start_marker, 'end_var'):
         line = line.strip()
         if in_struct:
             if line.lower().startswith('end_struct'):
                 in_struct = False
             continue
 
-        names, dtype, *_ = line.split(':')
+        names, dtype = line.split(':', 1)
+
+        if ':=' in dtype:
+            dtype, value = dtype.split(':=')
+        else:
+            value = None
 
         try:
             at_idx = names.lower().split(' ').index('at')
@@ -883,11 +890,15 @@ def variables_from_declaration(declaration):
         if dtype.lower() == 'struct':
             in_struct = True
 
+        var_metadata = {
+            'type': dtype.strip('; '),
+            'spec': ' '.join(specifiers),
+        }
+        if value is not None:
+            var_metadata['value'] = value.strip('; ')
+
         for name in names.split(','):
-            variables[name.strip()] = {
-                'type': dtype.strip('; '),
-                'spec': ' '.join(specifiers),
-            }
+            variables[name.strip()] = var_metadata
 
     return variables
 

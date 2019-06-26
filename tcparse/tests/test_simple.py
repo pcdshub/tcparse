@@ -43,6 +43,46 @@ from ..parse import get_pou_call_blocks, variables_from_declaration, parse
              },
             id='prog1_with_commas'
         ),
+        pytest.param(
+            '''
+               PROGRAM Main
+               VAR
+                   engine      AT %QX0.0: BOOL;
+                   deviceUp    AT %QX0.1: BOOL;
+                   deviceDown  AT %QX0.2: BOOL;
+                   timerUp:               TON;
+                   timerDown:             TON;
+                   steps:                 BYTE;
+                   count:                 UINT := 0;
+                   devSpeed:              TIME := t#10ms;
+                   devTimer:              TP;
+                   switch:                BOOL;
+               END_VAR
+            ''',
+            {'engine': {'spec': '%QX0.0', 'type': 'BOOL'},
+             'deviceUp': {'spec': '%QX0.1', 'type': 'BOOL'},
+             'deviceDown': {'spec': '%QX0.2', 'type': 'BOOL'},
+             'timerUp': {'spec': '', 'type': 'TON'},
+             'timerDown': {'spec': '', 'type': 'TON'},
+             'steps': {'spec': '', 'type': 'BYTE'},
+             'count': {'spec': '', 'type': 'UINT', 'value': '0'},
+             'devSpeed': {'spec': '', 'type': 'TIME', 'value': 't#10ms'},
+             'devTimer': {'spec': '', 'type': 'TP'},
+             'switch': {'spec': '', 'type': 'BOOL'},
+             },
+            id='berkoff_xtreme_vars'
+        ),
+        pytest.param(
+            '''
+            PROGRAM Main
+            VAR
+                arr1 at %I*: ARRAY [1..5] OF INT := 1,2,3,4,5;
+            END_VAR
+            ''',
+            {'arr1': {'spec': '%I*', 'type': 'ARRAY [1..5] OF INT', 'value': '1,2,3,4,5'},
+             },
+            id='int_array'
+        ),
      ]
 )
 def test_variables_from_declaration(decl, expected):
