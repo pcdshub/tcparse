@@ -871,10 +871,16 @@ def variables_from_declaration(declaration, *, start_marker='var'):
                 in_struct = False
             continue
 
+        if ':' not in line:
+            words = line.split(' ')
+            if words[0].lower() == 'type':
+                in_struct = True
+            continue
+
         names, dtype = line.split(':', 1)
 
         if ':=' in dtype:
-            dtype, value = dtype.split(':=')
+            dtype, value = dtype.split(':=', 1)
         else:
             value = None
 

@@ -83,6 +83,47 @@ from ..parse import get_pou_call_blocks, variables_from_declaration, parse
              },
             id='int_array'
         ),
+        pytest.param(
+            '''
+            PROGRAM Main
+            VAR
+                TYPE STRUCT1
+                STRUCT
+                    p1:int;
+                    p2:int;
+                    p3:dword;
+                END_STRUCT
+                arr1 : ARRAY[1..3] OF STRUCT1:= [(p1:=1,p2:=10,p3:=4723), (p1:=2,p2:=0,p3:=299), (p1:=14,p2:=5,p3:=112)];
+            END_VAR
+            ''',
+            {'arr1': {'spec': '',
+                      'type': 'ARRAY[1..3] OF STRUCT1',
+                      'value': '[(p1:=1,p2:=10,p3:=4723), (p1:=2,p2:=0,p3:=299), (p1:=14,p2:=5,p3:=112)]'},
+             },
+            id='structs',
+        ),
+        pytest.param(
+            '''
+            PROGRAM Main
+            VAR
+                TYPE STRUCT1
+                STRUCT
+                    p1:int;
+                    p2:int;
+                    p3:dword;
+                END_STRUCT
+                arr1 : ARRAY[1..3] OF STRUCT1:= [(p1:=1,p2:=10,p3:=4723),
+                (p1:=2,p2:=0,p3:=299),
+                (p1:=14,p2:=5,p3:=112)];
+            END_VAR
+            ''',
+            {'arr1': {'spec': '',
+                      'type': 'ARRAY[1..3] OF STRUCT1',
+                      'value': '[(p1:=1,p2:=10,p3:=4723), (p1:=2,p2:=0,p3:=299), (p1:=14,p2:=5,p3:=112)]'},
+             },
+            id='multiline_structs',
+            marks=pytest.mark.xfail,
+        ),
      ]
 )
 def test_variables_from_declaration(decl, expected):
