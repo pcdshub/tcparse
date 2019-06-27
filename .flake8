@@ -1,2 +1,10 @@
 [flake8]
-exclude = .git,__pycache__,build,dist,versioneer.py,tcparse/_version.py,docs/source/conf.py
+exclude = 
+    .git
+    __pycache__
+    build
+    dist
+    versioneer.py
+    tcparse/_version.py
+    docs/source/conf.py
+    tcparse/tests/test_simple.py

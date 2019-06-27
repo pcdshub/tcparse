@@ -9,7 +9,6 @@ Try::
 """
 
 import argparse
-import logging
 
 from .summary import (build_arg_parser as build_summary_arg_parser,
                       summary as summary_main)
@@ -18,6 +17,7 @@ from .stcmd import (build_arg_parser as build_stcmd_arg_parser,
 
 
 DESCRIPTION = __doc__
+
 
 def stcmd_main(args):
     _, _, template = render_stcmd(args)
@@ -28,6 +28,7 @@ COMMANDS = {
     'stcmd': (build_stcmd_arg_parser, stcmd_main),
     'summary': (build_summary_arg_parser, summary_main),
 }
+
 
 def main():
     top_parser = argparse.ArgumentParser(

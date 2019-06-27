@@ -541,7 +541,8 @@ class NC(TwincatItem):
         self.axes = getattr(self, 'Axis', [])
         if not self.axes:
             # Or they can be stored in a separate file, 'NC.xti':
-            self.axes = [item.Axis[0] for item in getattr(self, 'TcSmItem', [])]
+            self.axes = [item.Axis[0] for item in getattr(self, 'TcSmItem', [])
+                         ]
 
         self.axis_by_id = {
             int(axis.attributes['Id']): axis
@@ -706,8 +707,10 @@ class Plc(TwincatItem):
             # they will be loaded later.
             return
 
-        self.project_path = self.get_relative_path(proj.attributes['PrjFilePath'])
-        self.tmc_path = self.get_relative_path(proj.attributes['TmcFilePath'])
+        self.project_path = self.get_relative_path(
+            proj.attributes['PrjFilePath'])
+        self.tmc_path = self.get_relative_path(
+            proj.attributes['TmcFilePath'])
         self.project = (parse(self.project_path, parent=self)
                         if self.project_path.exists()
                         else None)
@@ -765,7 +768,6 @@ class TcSmItem_CNestedPlcProjDef(TcSmItem, Plc):
     Contains POUs and a parsed version of the tmc
     '''
     ...
-
 
 
 @_register_type
@@ -845,7 +847,7 @@ def lines_between(text, start_marker, end_marker, *, include_blank=False):
             yield line
 
 
-def variables_from_declaration(declaration):
+def variables_from_declaration(declaration, *, start_marker='var'):
     '''
     Find all variable declarations given a declaration text block
 
@@ -853,37 +855,62 @@ def variables_from_declaration(declaration):
     ----------
     declaration : str
         The declaration code
+    start_marker : str, optional
+        The default works with POUs, which have a variable block in
+        VAR/END_VAR.  Can be adjusted for GVL 'var_global' as well.
 
     Returns
     -------
     variables : dict
         {'var': {'type': 'TYPE', 'spec': '%I'}, ...}
     '''
-    # TODO: this has not been tested well at all
     variables = {}
-    in_struct = False
-    for line in lines_between(declaration, 'var', 'end_var'):
+    in_type = False
+    for line in lines_between(declaration, start_marker, 'end_var'):
         line = line.strip()
-        if in_struct:
-            if line.lower().startswith('end_struct'):
-                in_struct = False
+        if in_type:
+            if line.lower().startswith('end_type'):
+                in_type = False
             continue
 
-        name, dtype, *_ = line.split(':')
-        if ' ' in name:
-            name, specifier = name.split(' ', 1)
-            if specifier.lower().startswith('at '):
-                specifier = specifier[2:]
+        words = line.split(' ')
+        if words[0].lower() == 'type':
+            # type <type_name> :
+            # struct
+            # ...
+            # end_struct
+            # end_type
+            in_type = True
+            continue
+
+        # <names> : <dtype>
+        names, dtype = line.split(':', 1)
+
+        if ':=' in dtype:
+            # <names> : <dtype> := <value>
+            dtype, value = dtype.split(':=', 1)
         else:
-            specifier = ''
+            value = None
 
-        if dtype.lower() == 'struct':
-            in_struct = True
+        try:
+            at_idx = names.lower().split(' ').index('at')
+        except ValueError:
+            specifiers = []
+        else:
+            # <names> AT <specifiers> : <dtype> := <value>
+            words = names.split(' ')
+            specifiers = words[at_idx + 1:]
+            names = ' '.join(words[:at_idx])
 
-        variables[name] = {
+        var_metadata = {
             'type': dtype.strip('; '),
-            'spec': specifier.strip(),
+            'spec': ' '.join(specifiers),
         }
+        if value is not None:
+            var_metadata['value'] = value.strip('; ')
+
+        for name in names.split(','):
+            variables[name.strip()] = var_metadata
 
     return variables
 
