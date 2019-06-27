@@ -668,11 +668,15 @@ return a dictionary keyed on tag.</p>
 
 <dl class="function">
 <dt id="tcparse.parse.variables_from_declaration">
-<code class="sig-prename descclassname">tcparse.parse.</code><code class="sig-name descname">variables_from_declaration</code><span class="sig-paren">(</span><em class="sig-param">declaration</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tcparse/parse.html#variables_from_declaration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tcparse.parse.variables_from_declaration" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">tcparse.parse.</code><code class="sig-name descname">variables_from_declaration</code><span class="sig-paren">(</span><em class="sig-param">declaration</em>, <em class="sig-param">*</em>, <em class="sig-param">start_marker='var'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tcparse/parse.html#variables_from_declaration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tcparse.parse.variables_from_declaration" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find all variable declarations given a declaration text block</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>declaration</strong> (<em>str</em>) – The declaration code</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>declaration</strong> (<em>str</em>) – The declaration code</p></li>
+<li><p><strong>start_marker</strong> (<em>str</em><em>, </em><em>optional</em>) – The default works with POUs, which have a variable block in
+VAR/END_VAR.  Can be adjusted for GVL ‘var_global’ as well.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>variables</strong> – {‘var’: {‘type’: ‘TYPE’, ‘spec’: ‘%I’}, …}</p>

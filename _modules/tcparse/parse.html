@@ -693,7 +693,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">axes</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;Axis&#39;</span><span class="p">,</span> <span class="p">[])</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">:</span>
             <span class="c1"># Or they can be stored in a separate file, &#39;NC.xti&#39;:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">axes</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">Axis</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;TcSmItem&#39;</span><span class="p">,</span> <span class="p">[])]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axes</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">Axis</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;TcSmItem&#39;</span><span class="p">,</span> <span class="p">[])</span>
+                         <span class="p">]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">axis_by_id</span> <span class="o">=</span> <span class="p">{</span>
             <span class="nb">int</span><span class="p">(</span><span class="n">axis</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;Id&#39;</span><span class="p">]):</span> <span class="n">axis</span>
@@ -858,8 +859,10 @@
             <span class="c1"># they will be loaded later.</span>
             <span class="k">return</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">project_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_relative_path</span><span class="p">(</span><span class="n">proj</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;PrjFilePath&#39;</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tmc_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_relative_path</span><span class="p">(</span><span class="n">proj</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;TmcFilePath&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_relative_path</span><span class="p">(</span>
+            <span class="n">proj</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;PrjFilePath&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tmc_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_relative_path</span><span class="p">(</span>
+            <span class="n">proj</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;TmcFilePath&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="o">=</span> <span class="p">(</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_path</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
                         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
                         <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
@@ -917,7 +920,6 @@
 <span class="sd">    Contains POUs and a parsed version of the tmc</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="o">...</span></div>
-
 
 
 <div class="viewcode-block" id="Compile"><a class="viewcode-back" href="../../api.html#tcparse.parse.Compile">[docs]</a><span class="nd">@_register_type</span>
@@ -997,7 +999,7 @@
             <span class="k">yield</span> <span class="n">line</span></div>
 
 
-<div class="viewcode-block" id="variables_from_declaration"><a class="viewcode-back" href="../../api.html#tcparse.parse.variables_from_declaration">[docs]</a><span class="k">def</span> <span class="nf">variables_from_declaration</span><span class="p">(</span><span class="n">declaration</span><span class="p">):</span>
+<div class="viewcode-block" id="variables_from_declaration"><a class="viewcode-back" href="../../api.html#tcparse.parse.variables_from_declaration">[docs]</a><span class="k">def</span> <span class="nf">variables_from_declaration</span><span class="p">(</span><span class="n">declaration</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">start_marker</span><span class="o">=</span><span class="s1">&#39;var&#39;</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Find all variable declarations given a declaration text block</span>
 
@@ -1005,37 +1007,62 @@
 <span class="sd">    ----------</span>
 <span class="sd">    declaration : str</span>
 <span class="sd">        The declaration code</span>
+<span class="sd">    start_marker : str, optional</span>
+<span class="sd">        The default works with POUs, which have a variable block in</span>
+<span class="sd">        VAR/END_VAR.  Can be adjusted for GVL &#39;var_global&#39; as well.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    variables : dict</span>
 <span class="sd">        {&#39;var&#39;: {&#39;type&#39;: &#39;TYPE&#39;, &#39;spec&#39;: &#39;%I&#39;}, ...}</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="c1"># TODO: this has not been tested well at all</span>
     <span class="n">variables</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">in_struct</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines_between</span><span class="p">(</span><span class="n">declaration</span><span class="p">,</span> <span class="s1">&#39;var&#39;</span><span class="p">,</span> <span class="s1">&#39;end_var&#39;</span><span class="p">):</span>
+    <span class="n">in_type</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines_between</span><span class="p">(</span><span class="n">declaration</span><span class="p">,</span> <span class="n">start_marker</span><span class="p">,</span> <span class="s1">&#39;end_var&#39;</span><span class="p">):</span>
         <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">in_struct</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;end_struct&#39;</span><span class="p">):</span>
-                <span class="n">in_struct</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">in_type</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;end_type&#39;</span><span class="p">):</span>
+                <span class="n">in_type</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">continue</span>
 
-        <span class="n">name</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s1">&#39; &#39;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
-            <span class="n">name</span><span class="p">,</span> <span class="n">specifier</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">specifier</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;at &#39;</span><span class="p">):</span>
-                <span class="n">specifier</span> <span class="o">=</span> <span class="n">specifier</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="n">words</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">words</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span>
+            <span class="c1"># type &lt;type_name&gt; :</span>
+            <span class="c1"># struct</span>
+            <span class="c1"># ...</span>
+            <span class="c1"># end_struct</span>
+            <span class="c1"># end_type</span>
+            <span class="n">in_type</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># &lt;names&gt; : &lt;dtype&gt;</span>
+        <span class="n">names</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;:=&#39;</span> <span class="ow">in</span> <span class="n">dtype</span><span class="p">:</span>
+            <span class="c1"># &lt;names&gt; : &lt;dtype&gt; := &lt;value&gt;</span>
+            <span class="n">dtype</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">dtype</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:=&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">specifier</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="k">if</span> <span class="n">dtype</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;struct&#39;</span><span class="p">:</span>
-            <span class="n">in_struct</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">at_idx</span> <span class="o">=</span> <span class="n">names</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;at&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">specifiers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># &lt;names&gt; AT &lt;specifiers&gt; : &lt;dtype&gt; := &lt;value&gt;</span>
+            <span class="n">words</span> <span class="o">=</span> <span class="n">names</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+            <span class="n">specifiers</span> <span class="o">=</span> <span class="n">words</span><span class="p">[</span><span class="n">at_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">words</span><span class="p">[:</span><span class="n">at_idx</span><span class="p">])</span>
 
-        <span class="n">variables</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">var_metadata</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="n">dtype</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;; &#39;</span><span class="p">),</span>
-            <span class="s1">&#39;spec&#39;</span><span class="p">:</span> <span class="n">specifier</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+            <span class="s1">&#39;spec&#39;</span><span class="p">:</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">specifiers</span><span class="p">),</span>
         <span class="p">}</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">var_metadata</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;; &#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
+            <span class="n">variables</span><span class="p">[</span><span class="n">name</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span> <span class="o">=</span> <span class="n">var_metadata</span>
 
     <span class="k">return</span> <span class="n">variables</span></div>
 
